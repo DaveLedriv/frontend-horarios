@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 interface Materia {
   id: number;
@@ -34,7 +34,7 @@ export default function ListaMaterias() {
 
     try {
       await axios.delete(`${import.meta.env.VITE_API_URL}/materias/${id}`);
-      await fetchMaterias(); // recarga
+      await fetchMaterias(); // recarga sin refrescar la página
     } catch (err) {
       console.error('Error al eliminar materia:', err);
       alert('Ocurrió un error al eliminar la materia.');
@@ -47,49 +47,60 @@ export default function ListaMaterias() {
 
   return (
     <DashboardLayout>
-      <h1 className="text-2xl font-bold mb-6">Materias Existentes</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Materias registradas</h2>
+        <Link
+          to="/materias/crear"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+        >
+          Nueva materia
+        </Link>
+      </div>
 
       {loading ? (
-        <p>Cargando...</p>
+        <p className="text-center">Cargando...</p>
+      ) : materias.length === 0 ? (
+        <p className="text-center">No hay materias registradas.</p>
       ) : (
-        <table className="w-full bg-white text-sm shadow rounded">
-          <thead className="bg-gray-100 text-gray-700">
-            <tr>
-              <th className="px-4 py-2">Código</th>
-              <th className="px-4 py-2">Nombre</th>
-              <th className="px-4 py-2">Tipo</th>
-              <th className="px-4 py-2">Créditos</th>
-              <th className="px-4 py-2">Plan Estudio ID</th>
-              <th className="px-4 py-2">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {materias.map((m) => (
-              <tr key={m.id} className="border-b">
-                <td className="px-4 py-2">{m.codigo}</td>
-                <td className="px-4 py-2">{m.nombre}</td>
-                <td className="px-4 py-2">{m.tipo}</td>
-                <td className="px-4 py-2">{m.creditos}</td>
-                <td className="px-4 py-2">{m.plan_estudio_id}</td>
-               <td className="px-4 py-2 space-x-2">
-  <button
-    onClick={() => navigate(`/materias/editar/${m.id}`)}
-    className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition"
-  >
-    📝 Editar
-  </button>
-  <button
-    onClick={() => eliminarMateria(m.id)}
-    className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition"
-  >
-    🗑️ Eliminar
-  </button>
-</td>
-
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white rounded-lg shadow text-sm">
+            <thead className="bg-gray-100 text-gray-700">
+              <tr>
+                <th className="px-4 py-2 text-left">Código</th>
+                <th className="px-4 py-2 text-left">Nombre</th>
+                <th className="px-4 py-2 text-left">Tipo</th>
+                <th className="px-4 py-2 text-left">Créditos</th>
+                <th className="px-4 py-2 text-left">Plan Estudio ID</th>
+                <th className="px-4 py-2 text-left">Acciones</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {materias.map((m) => (
+                <tr key={m.id} className="border-t">
+                  <td className="px-4 py-2">{m.codigo}</td>
+                  <td className="px-4 py-2">{m.nombre}</td>
+                  <td className="px-4 py-2">{m.tipo}</td>
+                  <td className="px-4 py-2">{m.creditos}</td>
+                  <td className="px-4 py-2">{m.plan_estudio_id}</td>
+                  <td className="px-4 py-2 space-x-2">
+                    <Link
+                      to={`/materias/editar/${m.id}`}
+                      className="inline-block bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500 transition text-sm"
+                    >
+                      Editar
+                    </Link>
+                    <button
+                      onClick={() => eliminarMateria(m.id)}
+                      className="inline-block bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition text-sm"
+                    >
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </DashboardLayout>
   );
