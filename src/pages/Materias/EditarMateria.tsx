@@ -3,25 +3,23 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { usePlanesEstudio } from '../../hooks/usePlanesEstudio';
-  import { Materia } from '../../types/Materia';
+import { Materia } from '../../types/Materia';
 
 export default function EditarMateria() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
 
-const [materia, setMateria] = useState<Materia>({
-  id: 0,
-  nombre: '',
-  codigo: '',
-  tipo: 'OBLIGATORIA',
-  creditos: 0,
-  plan_estudio_id: 1,
-});
+  const [materia, setMateria] = useState<Materia>({
+    id: 0,
+    nombre: '',
+    codigo: '',
+    tipo: 'OBLIGATORIA',
+    creditos: 0,
+    plan_estudio_id: 1,
+  });
 
-
-const { planes, loading: loadingPlanes } = usePlanesEstudio();
-
+  const { planes, loading: loadingPlanes } = usePlanesEstudio();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,7 +39,10 @@ const { planes, loading: loadingPlanes } = usePlanesEstudio();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setMateria((prev) => ({ ...prev, [name]: name === 'creditos' || name === 'plan_estudio_id' ? Number(value) : value }));
+    setMateria((prev) => ({
+      ...prev,
+      [name]: name === 'creditos' || name === 'plan_estudio_id' ? Number(value) : value,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -71,7 +72,7 @@ const { planes, loading: loadingPlanes } = usePlanesEstudio();
                 name="nombre"
                 value={materia.nombre}
                 onChange={handleChange}
-                className="w-full mt-1 px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300"
+                className="w-full mt-1 px-4 py-2 border rounded-lg"
                 required
               />
             </div>
@@ -82,7 +83,7 @@ const { planes, loading: loadingPlanes } = usePlanesEstudio();
                 name="codigo"
                 value={materia.codigo}
                 onChange={handleChange}
-                className="w-full mt-1 px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300"
+                className="w-full mt-1 px-4 py-2 border rounded-lg"
                 required
               />
             </div>
@@ -93,6 +94,7 @@ const { planes, loading: loadingPlanes } = usePlanesEstudio();
                 value={materia.tipo}
                 onChange={handleChange}
                 className="w-full mt-1 px-4 py-2 border rounded-lg"
+                required
               >
                 <option value="">Selecciona una opción</option>
                 <option value="OBLIGATORIA">Obligatoria</option>
@@ -107,27 +109,27 @@ const { planes, loading: loadingPlanes } = usePlanesEstudio();
                 value={materia.creditos}
                 onChange={handleChange}
                 className="w-full mt-1 px-4 py-2 border rounded-lg"
+                required
               />
             </div>
             <div>
-  <label className="block text-sm font-medium text-gray-700">Plan de Estudio</label>
-  <select
-    name="plan_estudio_id"
-    value={materia.plan_estudio_id}
-    onChange={handleChange}
-    className="w-full mt-1 px-4 py-2 border rounded-lg"
-    disabled={loadingPlanes}
-  >
-    <option value="">Selecciona un plan</option>
-    {planes.map((plan) => (
-      <option key={plan.id} value={plan.id}>
-        {plan.nombre}
-      </option>
-    ))}
-  </select>
-</div>
-
-
+              <label className="block text-sm font-medium text-gray-700">Plan de Estudio</label>
+              <select
+                name="plan_estudio_id"
+                value={materia.plan_estudio_id}
+                onChange={handleChange}
+                className="w-full mt-1 px-4 py-2 border rounded-lg"
+                disabled={loadingPlanes}
+                required
+              >
+                <option value="">Selecciona un plan</option>
+                {planes.map((plan) => (
+                  <option key={plan.id} value={plan.id}>
+                    {plan.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
             <button
               type="submit"
               className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"

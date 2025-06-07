@@ -12,30 +12,48 @@ interface Materia {
 }
 
 export default function MateriasPorPlan() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const [materias, setMaterias] = useState<Materia[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchMaterias = async () => {
-      try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/planes-estudio/${id}/materias`);
-        setMaterias(res.data.materias);
-      } catch (err) {
-        console.error('Error al cargar materias:', err);
-        alert('No se pudieron cargar las materias.');
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchMaterias = async () => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/planes-estudio/${id}/materias`);
+      setMaterias(res.data.materias);
+    } catch (err) {
+      console.error('Error al cargar materias:', err);
+      alert('No se pudieron cargar las materias.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const eliminarMateria = async (materiaId: number) => {
+    const confirmar = window.confirm('¿Estás seguro de eliminar esta materia?');
+    if (!confirmar) return;
+
+    try {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/materias/${materiaId}`);
+      await fetchMaterias();
+    } catch (err) {
+      console.error('Error al eliminar materia:', err);
+      alert('No se pudo eliminar la materia.');
+    }
+  };
+
+  useEffect(() => {
     fetchMaterias();
   }, [id]);
 
   return (
     <DashboardLayout>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Materias del Plan #{id}</h2>
+        <Link
+          to="/planes-estudio"
+          className="text-sm text-blue-600 hover:underline"
+        >
+          ← Volver a planes de estudio
+        </Link>
         <Link
           to={`/materias/crear?plan=${id}`}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm"
@@ -43,6 +61,8 @@ export default function MateriasPorPlan() {
           Crear nueva materia
         </Link>
       </div>
+
+      <h2 className="text-2xl font-bold mb-4 text-center">Materias del Plan #{id}</h2>
 
       {loading ? (
         <p className="text-center">Cargando...</p>
@@ -57,6 +77,7 @@ export default function MateriasPorPlan() {
                 <th className="px-4 py-2">Nombre</th>
                 <th className="px-4 py-2">Tipo</th>
                 <th className="px-4 py-2">Créditos</th>
+                <th className="px-4 py-2">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -66,6 +87,20 @@ export default function MateriasPorPlan() {
                   <td className="px-4 py-2">{m.nombre}</td>
                   <td className="px-4 py-2">{m.tipo}</td>
                   <td className="px-4 py-2">{m.creditos}</td>
+                  <td className="px-4 py-2 space-x-2">
+                    <Link
+                      to={`/materias/editar/${m.id}`}
+                      className="bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500 transition text-sm"
+                    >
+                      Editar
+                    </Link>
+                    <button
+                      onClick={() => eliminarMateria(m.id)}
+                      className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition text-sm"
+                    >
+                      Eliminar
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
