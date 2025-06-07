@@ -11,7 +11,10 @@ import CrearDocente from './pages/Docentes/CrearDocente';
 import FacultadesList from './pages/Facultades/FacultadesList';
 import CrearFacultad from './pages/Facultades/CrearFacultad';
 import EditarFacultad from './pages/Facultades/EditarFacultad';
-
+import CrearPlanEstudio from './pages/PlanesEstudio/CrearPlan';
+import PlanesEstudioList from './pages/PlanesEstudio/PlanesEstudioList';
+import EditarPlanEstudio from './pages/PlanesEstudio/EditarPlan';
+import MateriasPorPlan from './pages/PlanesEstudio/MateriasPorPlan';
 
 function App() {
   return (
@@ -30,6 +33,10 @@ function App() {
           <Route path="/facultades" element={<FacultadesList />} />
           <Route path="/facultades/crear" element={<CrearFacultad />} />
           <Route path="/facultades/editar/:id" element={<EditarFacultad />} />
+          <Route path="/planes-estudio" element={<PlanesEstudioList />} />
+          <Route path="/planes-estudio/crear" element={<CrearPlanEstudio />} />
+          <Route path="/planes-estudio/editar/:id" element={<EditarPlanEstudio />} />
+          <Route path="/planes-estudio/:id/materias" element={<MateriasPorPlan />} />
 
 
         </Route>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { usePlanesEstudio } from '../../hooks/usePlanesEstudio';
@@ -7,12 +7,15 @@ import { PlanEstudio } from '../../types/PlanEstudio';
 
 export default function CrearMateria() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const preloadedPlanId = searchParams.get('plan');
+
   const [materia, setMateria] = useState({
     nombre: '',
     codigo: '',
     tipo: '',
     creditos: 0,
-    plan_estudio_id: 1,
+    plan_estudio_id: preloadedPlanId ? Number(preloadedPlanId) : 1,
   });
 
   const { planes, loading: loadingPlanes } = usePlanesEstudio();
@@ -27,7 +30,11 @@ export default function CrearMateria() {
     try {
       await axios.post(`${import.meta.env.VITE_API_URL}/materias`, materia);
       alert('Materia creada exitosamente');
-      navigate('/materias');
+      if (preloadedPlanId) {
+        navigate(`/planes-estudio/${preloadedPlanId}/materias`);
+      } else {
+        navigate('/materias');
+      }
     } catch (err) {
       console.error('Error al crear materia:', err);
       alert('No se pudo registrar la materia.');
@@ -90,7 +97,7 @@ export default function CrearMateria() {
               value={materia.plan_estudio_id}
               onChange={handleChange}
               className="w-full mt-1 px-4 py-2 border rounded-lg"
-              disabled={loadingPlanes}
+              disabled={loadingPlanes || !!preloadedPlanId}
               required
             >
               <option value="">Selecciona un plan</option>
