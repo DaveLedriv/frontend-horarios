@@ -17,6 +17,11 @@ import EditarPlanEstudio from './pages/PlanesEstudio/EditarPlan';
 import MateriasPorPlan from './pages/PlanesEstudio/MateriasPorPlan';
 import CrearAsignacion from './pages/Asignaciones/CrearAsignacion';
 import ListarAsignaciones from './pages/Asignaciones/AsignacionesList';
+import DetalleAsignacion from './pages/Asignaciones/DetalleAsignacion';
+import EditarAsignacion from './pages/Asignaciones/EditarAsignacion';
+import AsignacionesPorDocente from './pages/Asignaciones/AsignacionesPorDocente';
+
+
 function App() {
   return (
     <BrowserRouter>
@@ -40,6 +45,10 @@ function App() {
           <Route path="/planes-estudio/:id/materias" element={<MateriasPorPlan />} />
           <Route path="/asignaciones" element={<ListarAsignaciones />} />
           <Route path="/asignaciones/crear" element={<CrearAsignacion />} />
+          <Route path="/asignaciones/:id" element={<DetalleAsignacion />} />
+          <Route path="/asignaciones/editar/:asignacion_id" element={<EditarAsignacion />} />
+          <Route path="/asignaciones/docente/:id" element={<AsignacionesPorDocente />} />
+          <Route path="/asignaciones/detalle/:id" element={<DetalleAsignacion />} />
 
 
         </Route>

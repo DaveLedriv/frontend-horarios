@@ -49,9 +49,12 @@ export default function Sidebar({ onLogout }: { onLogout: () => void }) {
   label="Asignaciones"
   subItems={[
     { label: 'Crear Asignación', path: '/asignaciones/crear' },
-    { label: 'Asignaciones Existentes', path: '/asignaciones' },
+    { label: 'Ver/Editar Asignaciones', path: '/asignaciones' },
+    { label: 'Asignaciones por Docente', path: '/asignaciones/docente/1' }, // se puede cambiar el ID dinámicamente si deseas
+
   ]}
 />
+
 
 
         <SidebarItem
