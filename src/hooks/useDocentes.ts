@@ -7,20 +7,27 @@ export const useDocentes = () => {
   const [docentes, setDocentes] = useState<Docente[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchDocentes = async () => {
-      try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/docentes`);
+  const fetchDocentes = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/docentes`);
+      if (Array.isArray(res.data)) {
         setDocentes(res.data);
-      } catch (error) {
-        console.error('Error al cargar docentes', error);
-      } finally {
-        setLoading(false);
+      } else {
+        console.warn('La respuesta no contiene un arreglo de docentes');
+        setDocentes([]);
       }
-    };
+    } catch (error) {
+      console.error('Error al cargar docentes:', error);
+      setDocentes([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchDocentes();
   }, []);
 
-  return { docentes, loading };
+  return { docentes, loading, refetch: fetchDocentes };
 };

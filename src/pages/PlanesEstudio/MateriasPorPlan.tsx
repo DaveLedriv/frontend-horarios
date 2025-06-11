@@ -1,3 +1,4 @@
+// src/pages/Materias/MateriasPorPlan.tsx
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
@@ -54,12 +55,20 @@ export default function MateriasPorPlan() {
         >
           ← Volver a planes de estudio
         </Link>
-        <Link
-          to={`/materias/crear?plan=${id}`}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm"
-        >
-          Crear nueva materia
-        </Link>
+        <div className="space-x-2">
+          <Link
+            to={`/materias/crear?plan=${id}`}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm"
+          >
+            Crear nueva materia
+          </Link>
+          <Link
+            to={`/asignaciones/crear?plan=${id}`}
+            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition text-sm"
+          >
+            Asignar materia a docente
+          </Link>
+        </div>
       </div>
 
       <h2 className="text-2xl font-bold mb-4 text-center">Materias del Plan #{id}</h2>

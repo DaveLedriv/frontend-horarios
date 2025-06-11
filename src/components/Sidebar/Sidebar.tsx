@@ -22,13 +22,12 @@ export default function Sidebar({ onLogout }: { onLogout: () => void }) {
         />
 
         <SidebarItem
-  label="Planes de Estudio"
-  subItems={[
-    { label: 'Crear Plan', path: '/planes-estudio/crear' },
-    { label: 'Planes Existentes', path: '/planes-estudio' },
-  ]}
-/>
-
+          label="Planes de Estudio"
+          subItems={[
+            { label: 'Crear Plan', path: '/planes-estudio/crear' },
+            { label: 'Planes Existentes', path: '/planes-estudio' },
+          ]}
+        />
 
         <SidebarItem
           label="Materias"
@@ -47,12 +46,13 @@ export default function Sidebar({ onLogout }: { onLogout: () => void }) {
         />
 
         <SidebarItem
-          label="Asignaciones"
-          subItems={[
-            { label: 'Crear Asignación', path: '/asignaciones/crear' },
-            { label: 'Asignaciones Existentes', path: '/asignaciones' },
-          ]}
-        />
+  label="Asignaciones"
+  subItems={[
+    { label: 'Crear Asignación', path: '/asignaciones/crear' },
+    { label: 'Asignaciones Existentes', path: '/asignaciones' },
+  ]}
+/>
+
 
         <SidebarItem
           label="Horarios"

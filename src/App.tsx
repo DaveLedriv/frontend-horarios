@@ -15,7 +15,8 @@ import CrearPlanEstudio from './pages/PlanesEstudio/CrearPlan';
 import PlanesEstudioList from './pages/PlanesEstudio/PlanesEstudioList';
 import EditarPlanEstudio from './pages/PlanesEstudio/EditarPlan';
 import MateriasPorPlan from './pages/PlanesEstudio/MateriasPorPlan';
-
+import CrearAsignacion from './pages/Asignaciones/CrearAsignacion';
+import ListarAsignaciones from './pages/Asignaciones/AsignacionesList';
 function App() {
   return (
     <BrowserRouter>
@@ -37,6 +38,8 @@ function App() {
           <Route path="/planes-estudio/crear" element={<CrearPlanEstudio />} />
           <Route path="/planes-estudio/editar/:id" element={<EditarPlanEstudio />} />
           <Route path="/planes-estudio/:id/materias" element={<MateriasPorPlan />} />
+          <Route path="/asignaciones" element={<ListarAsignaciones />} />
+          <Route path="/asignaciones/crear" element={<CrearAsignacion />} />
 
 
         </Route>
