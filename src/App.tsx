@@ -20,6 +20,7 @@ import ListarAsignaciones from './pages/Asignaciones/AsignacionesList';
 import DetalleAsignacion from './pages/Asignaciones/DetalleAsignacion';
 import EditarAsignacion from './pages/Asignaciones/EditarAsignacion';
 import AsignacionesPorDocente from './pages/Asignaciones/AsignacionesPorDocente';
+import DisponibilidadDocente from './pages/Docentes/DisponibilidadDocente';
 
 
 function App() {
@@ -49,6 +50,8 @@ function App() {
           <Route path="/asignaciones/editar/:asignacion_id" element={<EditarAsignacion />} />
           <Route path="/asignaciones/docente/:id" element={<AsignacionesPorDocente />} />
           <Route path="/asignaciones/detalle/:id" element={<DetalleAsignacion />} />
+          <Route path="/docentes/disponibilidad" element={<DisponibilidadDocente />} />
+          <Route path="/docentes/disponibilidad/:id?" element={<DisponibilidadDocente />} />
 
 
         </Route>

@@ -42,6 +42,7 @@ export default function Sidebar({ onLogout }: { onLogout: () => void }) {
           subItems={[
             { label: 'Crear Docente', path: '/docentes/crear' },
             { label: 'Docentes Existentes', path: '/docentes' },
+            { label: 'Disponibilidad', path: '/docentes/disponibilidad' }
           ]}
         />
 
