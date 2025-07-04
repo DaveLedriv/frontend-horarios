@@ -38,13 +38,20 @@ export default function Sidebar({ onLogout }: { onLogout: () => void }) {
         />
 
         <SidebarItem
-          label="Docentes"
-          subItems={[
-            { label: 'Crear Docente', path: '/docentes/crear' },
-            { label: 'Docentes Existentes', path: '/docentes' },
-            { label: 'Disponibilidad', path: '/docentes/disponibilidad' }
-          ]}
-        />
+  label="Docentes"
+  subItems={[
+    { label: 'Crear Docente', path: '/docentes/crear' },
+    { label: 'Docentes Existentes', path: '/docentes' },
+  ]}
+/>
+
+<SidebarItem
+  label="Disponibilidad"
+  subItems={[
+    { label: 'Ver Disponibilidad', path: '/disponibilidad/ver' },
+    { label: 'Crear Disponibilidad', path: '/disponibilidad/crear' },
+  ]}
+/>
 
         <SidebarItem
   label="Asignaciones"
