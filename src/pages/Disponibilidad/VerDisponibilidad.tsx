@@ -4,6 +4,7 @@ import DashboardLayout from '../../layouts/DashboardLayout';
 import { useDocentes } from '../../hooks/useDocentes';
 
 interface BloqueDisponible {
+  id: number;
   dia: string;
   hora_inicio: string;
   hora_fin: string;
@@ -19,20 +20,29 @@ export default function VerDisponibilidad() {
   const [error, setError] = useState('');
 
   const obtenerDisponibilidad = async () => {
-  if (!docenteId) return;
+    if (!docenteId) return;
 
-  try {
-    const res = await axios.get(
-      `${import.meta.env.VITE_API_URL}/disponibilidad/docente/${docenteId}`
-    );
-    setDisponibilidad(res.data.disponibles);
-    setError('');
-  } catch (err) {
-    console.error(err);
-    setError('Error al cargar disponibilidad');
-  }
-};
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/disponibilidad/docente/${docenteId}`
+      );
+      setDisponibilidad(res.data.disponibles);
+      setError('');
+    } catch (err) {
+      console.error(err);
+      setError('Error al cargar disponibilidad');
+    }
+  };
 
+  const eliminarBloque = async (id: number) => {
+    try {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/disponibilidad/${id}`);
+      setDisponibilidad((prev) => prev.filter((b) => b.id !== id));
+    } catch (err) {
+      console.error(err);
+      setError('Error al eliminar disponibilidad');
+    }
+  };
 
   useEffect(() => {
     obtenerDisponibilidad();
@@ -40,7 +50,7 @@ export default function VerDisponibilidad() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-3xl mx-auto space-y-6">
+      <div className="max-w-4xl mx-auto space-y-6">
         <h2 className="text-2xl font-bold text-center">Disponibilidad de Docentes</h2>
 
         {error && <p className="text-red-600 text-center">{error}</p>}
@@ -65,9 +75,13 @@ export default function VerDisponibilidad() {
             onChange={(e) => setDia(e.target.value)}
           >
             <option value="">Todos los días</option>
-            {['lunes','martes','miercoles','jueves','viernes','sabado','domingo'].map((d) => (
-              <option key={d} value={d}>{d}</option>
-            ))}
+            {['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'].map(
+              (d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
+              )
+            )}
           </select>
 
           <input
@@ -75,7 +89,6 @@ export default function VerDisponibilidad() {
             className="border rounded px-3 py-2"
             value={desde}
             onChange={(e) => setDesde(e.target.value)}
-            placeholder="Desde"
           />
 
           <input
@@ -83,15 +96,26 @@ export default function VerDisponibilidad() {
             className="border rounded px-3 py-2"
             value={hasta}
             onChange={(e) => setHasta(e.target.value)}
-            placeholder="Hasta"
           />
         </div>
 
         {disponibilidad.length > 0 ? (
           <ul className="bg-white shadow rounded-lg divide-y">
-            {disponibilidad.map((bloque, index) => (
-              <li key={index} className="p-4">
-                <span className="font-semibold capitalize">{bloque.dia}</span>: {bloque.hora_inicio} - {bloque.hora_fin}
+            {disponibilidad.map((bloque) => (
+              <li key={bloque.id} className="p-4 flex items-center justify-between">
+                <span className="capitalize">
+                  <strong>{bloque.dia}</strong>: {bloque.hora_inicio} - {bloque.hora_fin}
+                </span>
+                <div className="space-x-2">
+                  <button
+                    onClick={() => eliminarBloque(bloque.id)}
+                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                  >
+                    Eliminar
+                  </button>
+                  {/* Puedes habilitar el botón de editar más adelante */}
+                  {/* <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Editar</button> */}
+                </div>
               </li>
             ))}
           </ul>
