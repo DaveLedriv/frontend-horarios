@@ -3,6 +3,7 @@ import { useAuthStore } from '../stores/authStore';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
+  withCredentials: true,
 });
 
 api.interceptors.request.use((config) => {
@@ -19,13 +20,28 @@ api.interceptors.response.use(
     console.log(`${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status}`);
     return response;
   },
-  (error) => {
+  async (error) => {
     const { response, config } = error;
     if (response) {
       console.log(`${config?.method?.toUpperCase()} ${config?.url} - ${response.status}`);
       if (response.status === 401) {
-        useAuthStore.getState().logout();
-        window.location.href = '/';
+        const originalRequest = config;
+        const auth = useAuthStore.getState();
+        if (!originalRequest._retry && auth.token) {
+          originalRequest._retry = true;
+          try {
+            await auth.refresh();
+            originalRequest.headers = originalRequest.headers || {};
+            originalRequest.headers.Authorization = `Bearer ${auth.token}`;
+            return api(originalRequest);
+          } catch (_) {
+            auth.logout();
+            window.location.href = '/';
+          }
+        } else {
+          auth.logout();
+          window.location.href = '/';
+        }
       }
       const normalizedError = {
         message: response.data?.message || 'Error en la solicitud',
