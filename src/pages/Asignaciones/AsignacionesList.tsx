@@ -3,15 +3,10 @@ import { Link } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../lib/api';
 import { useToast } from '../../hooks/useToast';
-
-interface Asignacion {
-  id: number;
-  docente: { id: number; nombre: string };
-  materia: { id: number; nombre: string };
-}
+import { AsignacionMateria } from '../../types/AsignacionMateria';
 
 export default function AsignacionesList() {
-  const [asignaciones, setAsignaciones] = useState<Asignacion[]>([]);
+  const [asignaciones, setAsignaciones] = useState<AsignacionMateria[]>([]);
   const [loading, setLoading] = useState(true);
   const { showSuccess, showError } = useToast();
 

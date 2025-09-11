@@ -2,13 +2,7 @@ import { useState, useEffect } from 'react';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../lib/api';
 import { useDocentes } from '../../hooks/useDocentes';
-
-interface BloqueDisponible {
-  id: number;
-  dia: string;
-  hora_inicio: string;
-  hora_fin: string;
-}
+import { DisponibilidadDocente } from '../../types/DisponibilidadDocente';
 
 export default function VerDisponibilidad() {
   const { docentes } = useDocentes();
@@ -16,7 +10,7 @@ export default function VerDisponibilidad() {
   const [dia, setDia] = useState('');
   const [desde, setDesde] = useState('');
   const [hasta, setHasta] = useState('');
-  const [disponibilidad, setDisponibilidad] = useState<BloqueDisponible[]>([]);
+  const [disponibilidad, setDisponibilidad] = useState<DisponibilidadDocente[]>([]);
   const [error, setError] = useState('');
 
   const obtenerDisponibilidad = async () => {
@@ -104,7 +98,7 @@ export default function VerDisponibilidad() {
             {disponibilidad.map((bloque) => (
               <li key={bloque.id} className="p-4 flex items-center justify-between">
                 <span className="capitalize">
-                  <strong>{bloque.dia}</strong>: {bloque.hora_inicio} - {bloque.hora_fin}
+                  <strong>{bloque.dia}</strong>: {bloque.hora_inicio.slice(0, 5)} - {bloque.hora_fin.slice(0, 5)}
                 </span>
                 <div className="space-x-2">
                   <button

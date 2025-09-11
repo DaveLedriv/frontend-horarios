@@ -3,26 +3,11 @@ import { useParams, Link } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../lib/api';
 import { useToast } from '../../hooks/useToast';
-
-interface Asignacion {
-  id: number;
-  docente: {
-    id: number;
-    nombre: string;
-    correo: string;
-  };
-  materia: {
-    id: number;
-    nombre: string;
-    codigo: string;
-    creditos: number;
-    tipo: string;
-  };
-}
+import { AsignacionMateria } from '../../types/AsignacionMateria';
 
 export default function DetalleAsignacion() {
   const { id } = useParams<{ id: string }>();
-  const [asignacion, setAsignacion] = useState<Asignacion | null>(null);
+  const [asignacion, setAsignacion] = useState<AsignacionMateria | null>(null);
   const [loading, setLoading] = useState(true);
   const { showError } = useToast();
 

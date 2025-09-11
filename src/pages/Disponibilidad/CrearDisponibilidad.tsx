@@ -17,13 +17,20 @@ export default function CrearDisponibilidad() {
   const agregarBloque = () => {
     setDisponibilidad([
       ...disponibilidad,
-      { dia: 'lunes', hora_inicio: '08:00', hora_fin: '10:00' },
+      { dia: 'lunes', hora_inicio: '08:00:00', hora_fin: '10:00:00' },
     ]);
   };
 
   const actualizarBloque = (index: number, campo: string, valor: string) => {
     const nuevaDisponibilidad = [...disponibilidad];
-    nuevaDisponibilidad[index] = { ...nuevaDisponibilidad[index], [campo]: valor };
+    const valorConFormato =
+      campo === 'hora_inicio' || campo === 'hora_fin'
+        ? valor ? `${valor}:00` : ''
+        : valor;
+    nuevaDisponibilidad[index] = {
+      ...nuevaDisponibilidad[index],
+      [campo]: valorConFormato,
+    };
     setDisponibilidad(nuevaDisponibilidad);
   };
 
@@ -70,13 +77,13 @@ export default function CrearDisponibilidad() {
                 <input
                   type="time"
                   className="border px-2 py-1 rounded"
-                  value={bloque.hora_inicio}
+                  value={bloque.hora_inicio.slice(0, 5)}
                   onChange={(e) => actualizarBloque(index, 'hora_inicio', e.target.value)}
                 />
                 <input
                   type="time"
                   className="border px-2 py-1 rounded"
-                  value={bloque.hora_fin}
+                  value={bloque.hora_fin.slice(0, 5)}
                   onChange={(e) => actualizarBloque(index, 'hora_fin', e.target.value)}
                 />
               </div>
