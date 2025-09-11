@@ -23,6 +23,9 @@ import EditarAsignacion from './pages/Asignaciones/EditarAsignacion';
 import AsignacionesPorDocente from './pages/Asignaciones/AsignacionesPorDocente';
 import VerDisponibilidad from './pages/Disponibilidad/VerDisponibilidad';
 import CrearDisponibilidad from './pages/Disponibilidad/CrearDisponibilidad';
+import ClaseProgramadaForm from './pages/Horarios/ClaseProgramadaForm';
+import HorariosPorDocente from './pages/Horarios/HorariosPorDocente';
+import AulasDisponibles from './pages/Horarios/AulasDisponibles';
 
 
 function App() {
@@ -54,6 +57,10 @@ function App() {
           <Route path="/asignaciones/docente/:id" element={<AsignacionesPorDocente />} />
           <Route path="/disponibilidad/ver" element={<VerDisponibilidad />} />
           <Route path="/disponibilidad/crear" element={<CrearDisponibilidad />} />
+          <Route path="/horarios/crear" element={<ClaseProgramadaForm />} />
+          <Route path="/horarios/editar/:id" element={<ClaseProgramadaForm />} />
+          <Route path="/horarios/docente/:docenteId" element={<HorariosPorDocente />} />
+          <Route path="/horarios/aulas-disponibles" element={<AulasDisponibles />} />
 
         </Route>
       </Routes>
