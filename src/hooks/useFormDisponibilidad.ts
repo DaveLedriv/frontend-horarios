@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import api from '../lib/api';
-import { Disponibilidad } from '../hooks/useDisponibilidadDocente';
+import { DisponibilidadDocente } from '../types/DisponibilidadDocente';
 
 export const useFormDisponibilidad = (docenteId: string) => {
-  const [disponibilidad, setDisponibilidad] = useState<Disponibilidad[]>([]);
+  const [disponibilidad, setDisponibilidad] = useState<DisponibilidadDocente[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

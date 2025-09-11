@@ -5,17 +5,12 @@ import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../lib/api';
 import { useDocentes } from '../../hooks/useDocentes';
 import { useToast } from '../../hooks/useToast';
-
-interface Asignacion {
-  id: number;
-  materia: { id: number; nombre: string };
-  docente: { id: number; nombre: string };
-}
+import { AsignacionMateria } from '../../types/AsignacionMateria';
 
 export default function AsignacionesPorDocente() {
   const { docentes, loading: loadingDocentes } = useDocentes();
   const [docenteId, setDocenteId] = useState('');
-  const [asignaciones, setAsignaciones] = useState<Asignacion[]>([]);
+  const [asignaciones, setAsignaciones] = useState<AsignacionMateria[]>([]);
   const [loading, setLoading] = useState(false);
   const { showError } = useToast();
 
