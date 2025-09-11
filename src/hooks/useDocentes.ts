@@ -1,6 +1,6 @@
 // src/hooks/useDocentes.ts
 import { useEffect, useState } from 'react';
-import apiClient from '../services/apiClient';
+import api from '../lib/api';
 import { Docente } from '../types/Docente';
 
 export const useDocentes = () => {
@@ -10,7 +10,7 @@ export const useDocentes = () => {
   const fetchDocentes = async () => {
     setLoading(true);
     try {
-      const res = await apiClient.get('/docentes');
+      const res = await api.get('/docentes');
       if (Array.isArray(res.data)) {
         setDocentes(res.data);
       } else {

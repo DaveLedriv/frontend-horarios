@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import apiClient from '../services/apiClient';
+import api from '../lib/api';
 import { Disponibilidad } from '../hooks/useDisponibilidadDocente';
 
 export const useFormDisponibilidad = (docenteId: string) => {
@@ -16,7 +16,7 @@ export const useFormDisponibilidad = (docenteId: string) => {
     setLoading(true);
     setError(null);
     try {
-      await apiClient.post('/disponibilidad', {
+      await api.post('/disponibilidad', {
         docente_id: Number(docenteId),
         disponibles: disponibilidad,
       });

@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
-import apiClient from '../../services/apiClient';
+import api from '../../lib/api';
 import { useDocentes } from '../../hooks/useDocentes';
 import { useToast } from '../../hooks/useToast';
 
@@ -23,7 +23,7 @@ export default function AsignacionesPorDocente() {
     setDocenteId(id);
     setLoading(true);
     try {
-      const res = await apiClient.get(`/asignaciones/docente/${id}`);
+      const res = await api.get(`/asignaciones/docente/${id}`);
       setAsignaciones(res.data);
     } catch (error) {
       console.error('Error al obtener asignaciones:', error);

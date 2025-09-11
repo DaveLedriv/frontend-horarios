@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
-import apiClient from '../../services/apiClient';
+import api from '../../lib/api';
 import { useToast } from '../../hooks/useToast';
 
 interface Asignacion {
@@ -29,7 +29,7 @@ export default function DetalleAsignacion() {
   useEffect(() => {
     const fetchAsignacion = async () => {
       try {
-        const res = await apiClient.get(`/asignaciones/${id}`);
+        const res = await api.get(`/asignaciones/${id}`);
         setAsignacion(res.data);
       } catch (error) {
         console.error('Error al obtener la asignación:', error);

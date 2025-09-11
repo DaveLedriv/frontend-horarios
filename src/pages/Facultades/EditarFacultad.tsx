@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
-import apiClient from '../../services/apiClient';
+import api from '../../lib/api';
 import { useToast } from '../../hooks/useToast';
 
 export default function EditarFacultad() {
@@ -14,7 +14,7 @@ export default function EditarFacultad() {
   useEffect(() => {
     const fetchFacultad = async () => {
       try {
-        const res = await apiClient.get(`/facultades/${id}`);
+        const res = await api.get(`/facultades/${id}`);
         setNombre(res.data.nombre);
       } catch (err) {
         console.error('Error al obtener facultad:', err);
@@ -30,7 +30,7 @@ export default function EditarFacultad() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await apiClient.put(`/facultades/${id}`, { nombre });
+      await api.put(`/facultades/${id}`, { nombre });
       showSuccess('Facultad actualizada exitosamente');
       navigate('/facultades');
     } catch (err) {

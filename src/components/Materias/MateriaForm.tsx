@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import apiClient from '../../services/apiClient';
+import api from '../../lib/api';
 
 interface Props {
   onSuccess: () => void;
@@ -20,7 +20,7 @@ export default function MateriaForm({ onSuccess }: Props) {
     setLoading(true);
 
     try {
-      await apiClient.post('/materias', {
+      await api.post('/materias', {
         nombre,
         codigo,
         creditos: Number(creditos),

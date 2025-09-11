@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import DashboardLayout from '../../layouts/DashboardLayout';
-import apiClient from '../../services/apiClient';
+import api from '../../lib/api';
 import { useNavigate, Link } from 'react-router-dom';
 import { Materia } from '../../types/Materia';
 import { useToast } from '../../hooks/useToast';
@@ -13,7 +13,7 @@ export default function ListaMaterias() {
 
   const fetchMaterias = async () => {
     try {
-      const res = await apiClient.get('/materias');
+      const res = await api.get('/materias');
       setMaterias(res.data);
     } catch (err) {
       console.error('Error al obtener materias:', err);
@@ -27,7 +27,7 @@ export default function ListaMaterias() {
     if (!confirm) return;
 
     try {
-      await apiClient.delete(`/materias/${id}`);
+      await api.delete(`/materias/${id}`);
       await fetchMaterias(); // recarga sin refrescar la página
       showSuccess('Materia eliminada correctamente');
     } catch (err) {

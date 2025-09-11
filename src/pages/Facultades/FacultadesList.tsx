@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
-import apiClient from '../../services/apiClient';
+import api from '../../lib/api';
 import { Facultad } from '../../types/Facultad';
 import { useToast } from '../../hooks/useToast';
 
@@ -13,7 +13,7 @@ export default function FacultadesList() {
 
   const fetchFacultades = async () => {
     try {
-      const res = await apiClient.get('/facultades');
+      const res = await api.get('/facultades');
       setFacultades(res.data);
     } catch (error) {
       console.error('Error al obtener facultades:', error);
@@ -28,7 +28,7 @@ export default function FacultadesList() {
     if (!confirmar) return;
 
     try {
-      await apiClient.delete(`/facultades/${id}`);
+      await api.delete(`/facultades/${id}`);
       await fetchFacultades(); // recargar la lista
       showSuccess('Facultad eliminada correctamente');
     } catch (error) {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import apiClient from '../services/apiClient';
+import api from '../lib/api';
 import { Materia } from '../types/Materia';
 
 export function useMaterias() {
@@ -10,7 +10,7 @@ export function useMaterias() {
   useEffect(() => {
     const fetchMaterias = async () => {
       try {
-        const res = await apiClient.get('/materias');
+        const res = await api.get('/materias');
         setMaterias(res.data);
       } catch (err) {
         console.error('Error al cargar materias:', err);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import DashboardLayout from '../../layouts/DashboardLayout';
-import apiClient from '../../services/apiClient';
+import api from '../../lib/api';
 import { useDocentes } from '../../hooks/useDocentes';
 
 interface BloqueDisponible {
@@ -23,7 +23,7 @@ export default function VerDisponibilidad() {
     if (!docenteId) return;
 
     try {
-      const res = await apiClient.get(
+      const res = await api.get(
         `/disponibilidad/docente/${docenteId}`
       );
       setDisponibilidad(res.data.disponibles);
@@ -36,7 +36,7 @@ export default function VerDisponibilidad() {
 
   const eliminarBloque = async (id: number) => {
     try {
-      await apiClient.delete(`/disponibilidad/${id}`);
+      await api.delete(`/disponibilidad/${id}`);
       setDisponibilidad((prev) => prev.filter((b) => b.id !== id));
     } catch (err) {
       console.error(err);

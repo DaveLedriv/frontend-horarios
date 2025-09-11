@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+import api from '../lib/api';
 
 export interface LoginCredentials {
   username: string;
@@ -15,7 +15,7 @@ export async function loginUser(credentials: LoginCredentials): Promise<LoginRes
   params.append('username', credentials.username);
   params.append('password', credentials.password);
 
-  const response = await apiClient.post('/auth/token', params, {
+  const response = await api.post('/auth/token', params, {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
