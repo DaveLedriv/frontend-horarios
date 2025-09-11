@@ -46,6 +46,7 @@ api.interceptors.response.use(
       const normalizedError = {
         message: response.data?.message || 'Error en la solicitud',
         fieldErrors: response.data?.errors,
+        status: response.status,
       };
       return Promise.reject(normalizedError);
     }
