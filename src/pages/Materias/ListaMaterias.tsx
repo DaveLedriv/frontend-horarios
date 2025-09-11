@@ -5,6 +5,9 @@ import { useState } from 'react';
 import { useMaterias } from '../../hooks/useMaterias';
 import { useToast } from '../../hooks/useToast';
 import ConfirmDialog from '../../components/ConfirmDialog';
+import Loading from '../../components/Loading';
+import EmptyState from '../../components/EmptyState';
+import ErrorMessage from '../../components/ErrorMessage';
 
 export default function ListaMaterias() {
   const { materias, loading, error, refetch } = useMaterias();
@@ -52,11 +55,11 @@ export default function ListaMaterias() {
       </div>
 
       {loading ? (
-        <p className="text-center">Cargando...</p>
+        <Loading />
       ) : error ? (
-        <p className="text-center">{error}</p>
+        <ErrorMessage message={error} />
       ) : materias.length === 0 ? (
-        <p className="text-center">No hay materias registradas.</p>
+        <EmptyState message="No hay materias registradas." />
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white rounded-lg shadow text-sm">

@@ -5,6 +5,8 @@ import api from '../../lib/api';
 import { usePlanesEstudio } from '../../hooks/usePlanesEstudio';
 import { useToast } from '../../hooks/useToast';
 import ConfirmDialog from '../../components/ConfirmDialog';
+import Loading from '../../components/Loading';
+import EmptyState from '../../components/EmptyState';
 
 export default function PlanesEstudioList() {
   const { planes, loading, refetch } = usePlanesEstudio();
@@ -52,9 +54,9 @@ export default function PlanesEstudioList() {
       </div>
 
       {loading ? (
-        <p className="text-center">Cargando...</p>
+        <Loading />
       ) : planes.length === 0 ? (
-        <p className="text-center">No hay planes registrados.</p>
+        <EmptyState message="No hay planes registrados." />
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white rounded-lg shadow">

@@ -5,6 +5,8 @@ import api from '../../lib/api';
 import { useDocentes } from '../../hooks/useDocentes';
 import { useToast } from '../../hooks/useToast';
 import ConfirmDialog from '../../components/ConfirmDialog';
+import Loading from '../../components/Loading';
+import EmptyState from '../../components/EmptyState';
 
 
 export default function DocentesList() {
@@ -53,9 +55,9 @@ export default function DocentesList() {
       </div>
 
       {loading ? (
-        <p className="text-center">Cargando...</p>
+        <Loading />
       ) : docentes.length === 0 ? (
-        <p className="text-center">No hay docentes registrados.</p>
+        <EmptyState message="No hay docentes registrados." />
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white rounded-lg shadow">

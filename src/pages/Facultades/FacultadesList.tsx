@@ -5,6 +5,8 @@ import api from '../../lib/api';
 import { useFacultades } from '../../hooks/useFacultades';
 import { useToast } from '../../hooks/useToast';
 import ConfirmDialog from '../../components/ConfirmDialog';
+import Loading from '../../components/Loading';
+import EmptyState from '../../components/EmptyState';
 
 
 export default function FacultadesList() {
@@ -53,9 +55,9 @@ export default function FacultadesList() {
       </div>
 
       {loading ? (
-        <p className="text-center">Cargando...</p>
+        <Loading />
       ) : facultades.length === 0 ? (
-        <p className="text-center">No hay facultades registradas.</p>
+        <EmptyState message="No hay facultades registradas." />
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white rounded-lg shadow text-sm">
