@@ -4,11 +4,13 @@ import DashboardLayout from '../../layouts/DashboardLayout';
 import apiClient from '../../services/apiClient';
 import axios from 'axios';
 import { PlanEstudio } from '../../types/PlanEstudio';
+import { useToast } from '../../hooks/useToast';
 
 export default function PlanesEstudioList() {
   const [planes, setPlanes] = useState<PlanEstudio[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { showSuccess, showError } = useToast();
 
   const fetchPlanes = async () => {
     try {
@@ -28,9 +30,10 @@ export default function PlanesEstudioList() {
     try {
       await apiClient.delete(`/planes-estudio/${id}`);
       await fetchPlanes();
+      showSuccess('Plan de estudio eliminado correctamente');
     } catch (error) {
       console.error('Error al eliminar el plan:', error);
-      alert('No se pudo eliminar el plan de estudio.');
+      showError('No se pudo eliminar el plan de estudio.');
     }
   };
 

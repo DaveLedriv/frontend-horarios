@@ -4,11 +4,13 @@ import DashboardLayout from '../../layouts/DashboardLayout';
 import apiClient from '../../services/apiClient';
 import axios from 'axios';
 import { Docente } from '../../types/Docente';
+import { useToast } from '../../hooks/useToast';
 
 
 export default function DocentesList() {
   const [docentes, setDocentes] = useState<Docente[]>([]);
   const [loading, setLoading] = useState(true);
+  const { showSuccess, showError } = useToast();
 
   const fetchDocentes = async () => {
     try {
@@ -16,7 +18,7 @@ export default function DocentesList() {
       setDocentes(res.data);
     } catch (err) {
       console.error('Error al cargar docentes:', err);
-      alert('No se pudieron cargar los docentes.');
+      showError('No se pudieron cargar los docentes.');
     } finally {
       setLoading(false);
     }
@@ -29,9 +31,10 @@ export default function DocentesList() {
     try {
       await apiClient.delete(`/docentes/${id}`);
       await fetchDocentes();
+      showSuccess('Docente eliminado correctamente');
     } catch (err) {
       console.error('Error al eliminar docente:', err);
-      alert('No se pudo eliminar el docente.');
+      showError('No se pudo eliminar el docente.');
     }
   };
 

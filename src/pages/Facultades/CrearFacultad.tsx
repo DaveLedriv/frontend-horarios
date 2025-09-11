@@ -2,20 +2,22 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import apiClient from '../../services/apiClient';
+import { useToast } from '../../hooks/useToast';
 
 export default function CrearFacultad() {
   const navigate = useNavigate();
   const [nombre, setNombre] = useState('');
+  const { showSuccess, showError } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await apiClient.post('/facultades', { nombre });
-      alert('Facultad creada exitosamente');
+      showSuccess('Facultad creada exitosamente');
       navigate('/facultades');
     } catch (err) {
       console.error('Error al crear facultad:', err);
-      alert('No se pudo registrar la facultad.');
+      showError('No se pudo registrar la facultad.');
     }
   };
 

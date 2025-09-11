@@ -4,6 +4,7 @@ import DashboardLayout from '../../layouts/DashboardLayout';
 import apiClient from '../../services/apiClient';
 import { useFacultades } from '../../hooks/useFacultades';
 import { Facultad } from '../../types/Facultad';
+import { useToast } from '../../hooks/useToast';
 
 export default function CrearPlanEstudio() {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ export default function CrearPlanEstudio() {
     nombre: '',
     facultad_id: 1,
   });
+  const { showSuccess, showError } = useToast();
 
   const { facultades, loading: loadingFacultades } = useFacultades();
 
@@ -23,11 +25,11 @@ export default function CrearPlanEstudio() {
     e.preventDefault();
     try {
       await apiClient.post('/planes-estudio', plan);
-      alert('Plan de estudio creado exitosamente');
+      showSuccess('Plan de estudio creado exitosamente');
       navigate('/planes-estudio');
     } catch (err) {
       console.error('Error al crear plan de estudio:', err);
-      alert('No se pudo registrar el plan de estudio.');
+      showError('No se pudo registrar el plan de estudio.');
     }
   };
 

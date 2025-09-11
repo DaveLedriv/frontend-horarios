@@ -4,6 +4,7 @@ import DashboardLayout from '../../layouts/DashboardLayout';
 import apiClient from '../../services/apiClient';
 import { useFacultades } from '../../hooks/useFacultades';
 import { Facultad } from '../../types/Facultad';
+import { useToast } from '../../hooks/useToast';
 
 export default function EditarPlanEstudio() {
   const { id } = useParams();
@@ -15,6 +16,7 @@ export default function EditarPlanEstudio() {
   });
 
   const { facultades, loading: loadingFacultades } = useFacultades();
+  const { showSuccess, showError } = useToast();
 
   useEffect(() => {
     const fetchPlan = async () => {
@@ -23,7 +25,7 @@ export default function EditarPlanEstudio() {
         setPlan(res.data);
       } catch (err) {
         console.error('Error al cargar plan:', err);
-        alert('No se pudo cargar el plan de estudio.');
+        showError('No se pudo cargar el plan de estudio.');
       } finally {
         setLoading(false);
       }
@@ -44,11 +46,11 @@ export default function EditarPlanEstudio() {
     e.preventDefault();
     try {
       await apiClient.put(`/planes-estudio/${id}`, plan);
-      alert('Plan de estudio actualizado correctamente');
+      showSuccess('Plan de estudio actualizado correctamente');
       navigate('/planes-estudio');
     } catch (err) {
       console.error('Error al actualizar el plan:', err);
-      alert('No se pudo actualizar el plan de estudio.');
+      showError('No se pudo actualizar el plan de estudio.');
     }
   };
 

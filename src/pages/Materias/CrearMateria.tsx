@@ -4,6 +4,7 @@ import DashboardLayout from '../../layouts/DashboardLayout';
 import apiClient from '../../services/apiClient';
 import { usePlanesEstudio } from '../../hooks/usePlanesEstudio';
 import { PlanEstudio } from '../../types/PlanEstudio';
+import { useToast } from '../../hooks/useToast';
 
 export default function CrearMateria() {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ export default function CrearMateria() {
   });
 
   const { planes, loading: loadingPlanes } = usePlanesEstudio();
+  const { showSuccess, showError } = useToast();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -29,7 +31,7 @@ export default function CrearMateria() {
     e.preventDefault();
     try {
       await apiClient.post('/materias', materia);
-      alert('Materia creada exitosamente');
+      showSuccess('Materia creada exitosamente');
       if (preloadedPlanId) {
         navigate(`/planes-estudio/${preloadedPlanId}/materias`);
       } else {
@@ -37,7 +39,7 @@ export default function CrearMateria() {
       }
     } catch (err) {
       console.error('Error al crear materia:', err);
-      alert('No se pudo registrar la materia.');
+      showError('No se pudo registrar la materia.');
     }
   };
 

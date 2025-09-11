@@ -7,6 +7,7 @@ import { useDocentes } from '../../hooks/useDocentes';
 import { useMaterias } from '../../hooks/useMaterias';
 import { Docente } from '../../types/Docente';
 import { Materia } from '../../types/Materia';
+import { useToast } from '../../hooks/useToast';
 
 export default function EditarAsignacion() {
   const { asignacion_id } = useParams();
@@ -16,6 +17,7 @@ export default function EditarAsignacion() {
 
   const { docentes, loading: loadingDocentes } = useDocentes();
   const { materias, loading: loadingMaterias } = useMaterias();
+  const { showSuccess, showError } = useToast();
 
   useEffect(() => {
     const fetchAsignacion = async () => {
@@ -27,7 +29,7 @@ export default function EditarAsignacion() {
         });
       } catch (err) {
         console.error('Error al cargar asignación:', err);
-        alert('No se pudo cargar la asignación.');
+        showError('No se pudo cargar la asignación.');
       } finally {
         setLoading(false);
       }
@@ -48,11 +50,11 @@ export default function EditarAsignacion() {
         docente_id: Number(form.docente_id),
         materia_id: Number(form.materia_id),
       });
-      alert('Asignación actualizada correctamente');
+      showSuccess('Asignación actualizada correctamente');
       navigate('/asignaciones');
     } catch (err) {
       console.error('Error al actualizar asignación:', err);
-      alert('No se pudo actualizar la asignación.');
+      showError('No se pudo actualizar la asignación.');
     }
   };
 

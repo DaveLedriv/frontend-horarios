@@ -3,11 +3,13 @@ import DashboardLayout from '../../layouts/DashboardLayout';
 import apiClient from '../../services/apiClient';
 import { useNavigate, Link } from 'react-router-dom';
 import { Materia } from '../../types/Materia';
+import { useToast } from '../../hooks/useToast';
 
 export default function ListaMaterias() {
   const [materias, setMaterias] = useState<Materia[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { showSuccess, showError } = useToast();
 
   const fetchMaterias = async () => {
     try {
@@ -27,9 +29,10 @@ export default function ListaMaterias() {
     try {
       await apiClient.delete(`/materias/${id}`);
       await fetchMaterias(); // recarga sin refrescar la página
+      showSuccess('Materia eliminada correctamente');
     } catch (err) {
       console.error('Error al eliminar materia:', err);
-      alert('Ocurrió un error al eliminar la materia.');
+      showError('Ocurrió un error al eliminar la materia.');
     }
   };
 

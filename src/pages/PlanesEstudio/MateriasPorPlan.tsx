@@ -5,11 +5,13 @@ import DashboardLayout from '../../layouts/DashboardLayout';
 import apiClient from '../../services/apiClient';
 import axios from 'axios';
 import { Materia } from '../../types/Materia';
+import { useToast } from '../../hooks/useToast';
 
 export default function MateriasPorPlan() {
   const { id } = useParams<{ id: string }>();
   const [materias, setMaterias] = useState<Materia[]>([]);
   const [loading, setLoading] = useState(true);
+  const { showSuccess, showError } = useToast();
 
   const fetchMaterias = async () => {
     try {
@@ -17,7 +19,7 @@ export default function MateriasPorPlan() {
       setMaterias(res.data.materias);
     } catch (err) {
       console.error('Error al cargar materias:', err);
-      alert('No se pudieron cargar las materias.');
+      showError('No se pudieron cargar las materias.');
     } finally {
       setLoading(false);
     }
@@ -30,9 +32,10 @@ export default function MateriasPorPlan() {
     try {
       await apiClient.delete(`/materias/${materiaId}`);
       await fetchMaterias();
+      showSuccess('Materia eliminada correctamente');
     } catch (err) {
       console.error('Error al eliminar materia:', err);
-      alert('No se pudo eliminar la materia.');
+      showError('No se pudo eliminar la materia.');
     }
   };
 

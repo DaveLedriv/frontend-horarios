@@ -4,6 +4,7 @@ import DashboardLayout from '../../layouts/DashboardLayout';
 import apiClient from '../../services/apiClient';
 import { useFacultades } from '../../hooks/useFacultades';
 import { Facultad } from '../../types/Facultad';
+import { useToast } from '../../hooks/useToast';
 
 export default function EditarDocente() {
   const { id } = useParams();
@@ -17,6 +18,7 @@ export default function EditarDocente() {
   });
 
   const { facultades, loading: loadingFacultades } = useFacultades();
+  const { showSuccess, showError } = useToast();
 
   useEffect(() => {
     const fetchDocente = async () => {
@@ -25,7 +27,7 @@ export default function EditarDocente() {
         setDocente(res.data);
       } catch (err) {
         console.error('Error al obtener docente:', err);
-        alert('No se pudo cargar el docente.');
+        showError('No se pudo cargar el docente.');
       } finally {
         setLoading(false);
       }
@@ -43,11 +45,11 @@ export default function EditarDocente() {
     e.preventDefault();
     try {
       await apiClient.put(`/docentes/${id}`, docente);
-      alert('Docente actualizado correctamente');
+      showSuccess('Docente actualizado correctamente');
       navigate('/docentes');
     } catch (err) {
       console.error('Error al actualizar docente:', err);
-      alert('No se pudo actualizar el docente.');
+      showError('No se pudo actualizar el docente.');
     }
   };
 

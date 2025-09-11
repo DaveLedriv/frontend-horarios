@@ -4,6 +4,7 @@ import DashboardLayout from '../../layouts/DashboardLayout';
 import apiClient from '../../services/apiClient';
 import { useFacultades } from '../../hooks/useFacultades';
 import { Facultad } from '../../types/Facultad';
+import { useToast } from '../../hooks/useToast';
 
 export default function CrearDocente() {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ export default function CrearDocente() {
   });
 
   const { facultades, loading: loadingFacultades } = useFacultades();
+  const { showSuccess, showError } = useToast();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -25,11 +27,11 @@ export default function CrearDocente() {
     e.preventDefault();
     try {
       await apiClient.post('/docentes', docente);
-      alert('Docente creado exitosamente');
+      showSuccess('Docente creado exitosamente');
       navigate('/docentes');
     } catch (err) {
       console.error('Error al crear docente:', err);
-      alert('No se pudo registrar el docente.');
+      showError('No se pudo registrar el docente.');
     }
   };
 

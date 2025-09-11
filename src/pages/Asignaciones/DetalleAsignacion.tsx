@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import apiClient from '../../services/apiClient';
+import { useToast } from '../../hooks/useToast';
 
 interface Asignacion {
   id: number;
@@ -23,6 +24,7 @@ export default function DetalleAsignacion() {
   const { id } = useParams<{ id: string }>();
   const [asignacion, setAsignacion] = useState<Asignacion | null>(null);
   const [loading, setLoading] = useState(true);
+  const { showError } = useToast();
 
   useEffect(() => {
     const fetchAsignacion = async () => {
@@ -31,7 +33,7 @@ export default function DetalleAsignacion() {
         setAsignacion(res.data);
       } catch (error) {
         console.error('Error al obtener la asignación:', error);
-        alert('No se pudo cargar la asignación');
+        showError('No se pudo cargar la asignación');
       } finally {
         setLoading(false);
       }

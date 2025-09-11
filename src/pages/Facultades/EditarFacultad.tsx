@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import apiClient from '../../services/apiClient';
+import { useToast } from '../../hooks/useToast';
 
 export default function EditarFacultad() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [nombre, setNombre] = useState('');
   const [loading, setLoading] = useState(true);
+  const { showSuccess, showError } = useToast();
 
   useEffect(() => {
     const fetchFacultad = async () => {
@@ -16,7 +18,7 @@ export default function EditarFacultad() {
         setNombre(res.data.nombre);
       } catch (err) {
         console.error('Error al obtener facultad:', err);
-        alert('No se pudo cargar la facultad.');
+        showError('No se pudo cargar la facultad.');
       } finally {
         setLoading(false);
       }
@@ -29,11 +31,11 @@ export default function EditarFacultad() {
     e.preventDefault();
     try {
       await apiClient.put(`/facultades/${id}`, { nombre });
-      alert('Facultad actualizada exitosamente');
+      showSuccess('Facultad actualizada exitosamente');
       navigate('/facultades');
     } catch (err) {
       console.error('Error al actualizar facultad:', err);
-      alert('No se pudo actualizar la facultad.');
+      showError('No se pudo actualizar la facultad.');
     }
   };
 
