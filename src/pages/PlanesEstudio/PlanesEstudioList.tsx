@@ -1,27 +1,12 @@
-import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../lib/api';
-import axios from 'axios';
-import { PlanEstudio } from '../../types/PlanEstudio';
+import { usePlanesEstudio } from '../../hooks/usePlanesEstudio';
 import { useToast } from '../../hooks/useToast';
 
 export default function PlanesEstudioList() {
-  const [planes, setPlanes] = useState<PlanEstudio[]>([]);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const { planes, loading, refetch } = usePlanesEstudio();
   const { showSuccess, showError } = useToast();
-
-  const fetchPlanes = async () => {
-    try {
-      const res = await api.get('/planes-estudio');
-      setPlanes(res.data);
-    } catch (error) {
-      console.error('Error al obtener planes de estudio:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const eliminarPlan = async (id: number) => {
     const confirmar = window.confirm('¿Estás seguro de eliminar este plan de estudio?');
@@ -29,17 +14,13 @@ export default function PlanesEstudioList() {
 
     try {
       await api.delete(`/planes-estudio/${id}`);
-      await fetchPlanes();
+      await refetch();
       showSuccess('Plan de estudio eliminado correctamente');
     } catch (error) {
       console.error('Error al eliminar el plan:', error);
       showError('No se pudo eliminar el plan de estudio.');
     }
   };
-
-  useEffect(() => {
-    fetchPlanes();
-  }, []);
 
   return (
     <DashboardLayout>
