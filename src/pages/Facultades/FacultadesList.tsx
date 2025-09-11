@@ -1,18 +1,19 @@
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../lib/api';
 import { useFacultades } from '../../hooks/useFacultades';
 import { useToast } from '../../hooks/useToast';
+import ConfirmDialog from '../../components/ConfirmDialog';
 
 
 export default function FacultadesList() {
   const { facultades, loading, refetch } = useFacultades();
   const { showSuccess, showError } = useToast();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
-  const handleEliminar = async (id: number) => {
-    const confirmar = window.confirm('¿Estás seguro de eliminar esta facultad?');
-    if (!confirmar) return;
-
+  const eliminar = async (id: number) => {
     try {
       await api.delete(`/facultades/${id}`);
       await refetch();
@@ -21,6 +22,22 @@ export default function FacultadesList() {
       console.error('Error al eliminar facultad:', error);
       showError('No se pudo eliminar la facultad.');
     }
+  };
+
+  const handleEliminar = (id: number) => {
+    setSelectedId(id);
+    setDialogOpen(true);
+  };
+
+  const handleConfirm = () => {
+    if (selectedId !== null) {
+      eliminar(selectedId);
+    }
+    setDialogOpen(false);
+  };
+
+  const handleCancel = () => {
+    setDialogOpen(false);
   };
 
   return (
@@ -74,6 +91,15 @@ export default function FacultadesList() {
           </table>
         </div>
       )}
+      <ConfirmDialog
+        isOpen={dialogOpen}
+        title="Eliminar facultad"
+        message="¿Estás seguro de eliminar esta facultad?"
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
     </DashboardLayout>
   );
 }

@@ -4,11 +4,14 @@ import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../lib/api';
 import { useToast } from '../../hooks/useToast';
 import { AsignacionMateria } from '../../types/AsignacionMateria';
+import ConfirmDialog from '../../components/ConfirmDialog';
 
 export default function AsignacionesList() {
   const [asignaciones, setAsignaciones] = useState<AsignacionMateria[]>([]);
   const [loading, setLoading] = useState(true);
   const { showSuccess, showError } = useToast();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const fetchAsignaciones = async () => {
     try {
@@ -23,9 +26,6 @@ export default function AsignacionesList() {
   };
 
   const eliminarAsignacion = async (id: number) => {
-    const confirm = window.confirm('¿Estás seguro de eliminar esta asignación?');
-    if (!confirm) return;
-
     try {
       await api.delete(`/asignaciones/${id}`);
       await fetchAsignaciones();
@@ -34,6 +34,22 @@ export default function AsignacionesList() {
       console.error('Error al eliminar asignación:', err);
       showError('No se pudo eliminar la asignación.');
     }
+  };
+
+  const handleEliminar = (id: number) => {
+    setSelectedId(id);
+    setDialogOpen(true);
+  };
+
+  const handleConfirm = () => {
+    if (selectedId !== null) {
+      eliminarAsignacion(selectedId);
+    }
+    setDialogOpen(false);
+  };
+
+  const handleCancel = () => {
+    setDialogOpen(false);
   };
 
   useEffect(() => {
@@ -85,7 +101,7 @@ export default function AsignacionesList() {
                       Editar
                     </Link>
                     <button
-                      onClick={() => eliminarAsignacion(a.id)}
+                      onClick={() => handleEliminar(a.id)}
                       className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition text-sm"
                     >
                       Eliminar
@@ -97,6 +113,15 @@ export default function AsignacionesList() {
           </table>
         </div>
       )}
+      <ConfirmDialog
+        isOpen={dialogOpen}
+        title="Eliminar asignación"
+        message="¿Estás seguro de eliminar esta asignación?"
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
     </DashboardLayout>
   );
 }
