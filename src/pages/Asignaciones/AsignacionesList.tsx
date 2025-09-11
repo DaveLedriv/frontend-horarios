@@ -1,34 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../lib/api';
 import { useToast } from '../../hooks/useToast';
-import { AsignacionMateria } from '../../types/AsignacionMateria';
+import { useAsignaciones } from '../../hooks/useAsignaciones';
 import ConfirmDialog from '../../components/ConfirmDialog';
+import Loading from '../../components/Loading';
+import EmptyState from '../../components/EmptyState';
+import ErrorMessage from '../../components/ErrorMessage';
 
 export default function AsignacionesList() {
-  const [asignaciones, setAsignaciones] = useState<AsignacionMateria[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { asignaciones, loading, error, refetch } = useAsignaciones();
   const { showSuccess, showError } = useToast();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
-  const fetchAsignaciones = async () => {
-    try {
-      const res = await api.get('/asignaciones');
-      setAsignaciones(res.data);
-    } catch (err) {
-      console.error('Error al cargar asignaciones:', err);
-      showError('No se pudieron cargar las asignaciones.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const eliminarAsignacion = async (id: number) => {
     try {
       await api.delete(`/asignaciones/${id}`);
-      await fetchAsignaciones();
+      await refetch();
       showSuccess('Asignación eliminada correctamente');
     } catch (err) {
       console.error('Error al eliminar asignación:', err);
@@ -52,10 +42,6 @@ export default function AsignacionesList() {
     setDialogOpen(false);
   };
 
-  useEffect(() => {
-    fetchAsignaciones();
-  }, []);
-
   return (
     <DashboardLayout>
       <div className="flex justify-between items-center mb-6">
@@ -69,9 +55,11 @@ export default function AsignacionesList() {
       </div>
 
       {loading ? (
-        <p className="text-center">Cargando...</p>
+        <Loading />
+      ) : error ? (
+        <ErrorMessage message={error} />
       ) : asignaciones.length === 0 ? (
-        <p className="text-center">No hay asignaciones registradas.</p>
+        <EmptyState message="No hay asignaciones registradas." />
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white rounded-lg shadow">
