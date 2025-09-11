@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import DashboardLayout from '../../layouts/DashboardLayout';
+import apiClient from '../../services/apiClient';
 import { useFacultades } from '../../hooks/useFacultades';
 import { Facultad } from '../../types/Facultad';
 
@@ -22,7 +22,7 @@ export default function CrearPlanEstudio() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/planes-estudio`, plan);
+      await apiClient.post('/planes-estudio', plan);
       alert('Plan de estudio creado exitosamente');
       navigate('/planes-estudio');
     } catch (err) {

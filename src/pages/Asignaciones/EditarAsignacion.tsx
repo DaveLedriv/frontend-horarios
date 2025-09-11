@@ -1,8 +1,8 @@
 // src/pages/asignaciones/EditarAsignacion.tsx
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import DashboardLayout from '../../layouts/DashboardLayout';
+import apiClient from '../../services/apiClient';
 import { useDocentes } from '../../hooks/useDocentes';
 import { useMaterias } from '../../hooks/useMaterias';
 import { Docente } from '../../types/Docente';
@@ -20,7 +20,7 @@ export default function EditarAsignacion() {
   useEffect(() => {
     const fetchAsignacion = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/asignaciones/${asignacion_id}`);
+        const res = await apiClient.get(`/asignaciones/${asignacion_id}`);
         setForm({
           docente_id: String(res.data.docente.id),
           materia_id: String(res.data.materia.id),
@@ -44,7 +44,7 @@ export default function EditarAsignacion() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.put(`${import.meta.env.VITE_API_URL}/asignaciones/${asignacion_id}`, {
+      await apiClient.put(`/asignaciones/${asignacion_id}`, {
         docente_id: Number(form.docente_id),
         materia_id: Number(form.materia_id),
       });

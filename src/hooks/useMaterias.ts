@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import apiClient from '../services/apiClient';
 import { Materia } from '../types/Materia';
 
 export function useMaterias() {
@@ -10,7 +10,7 @@ export function useMaterias() {
   useEffect(() => {
     const fetchMaterias = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/materias`);
+        const res = await apiClient.get('/materias');
         setMaterias(res.data);
       } catch (err) {
         console.error('Error al cargar materias:', err);

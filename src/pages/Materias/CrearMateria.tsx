@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import axios from 'axios';
 import DashboardLayout from '../../layouts/DashboardLayout';
+import apiClient from '../../services/apiClient';
 import { usePlanesEstudio } from '../../hooks/usePlanesEstudio';
 import { PlanEstudio } from '../../types/PlanEstudio';
 
@@ -28,7 +28,7 @@ export default function CrearMateria() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/materias`, materia);
+      await apiClient.post('/materias', materia);
       alert('Materia creada exitosamente');
       if (preloadedPlanId) {
         navigate(`/planes-estudio/${preloadedPlanId}/materias`);

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
 import DashboardLayout from '../../layouts/DashboardLayout';
+import apiClient from '../../services/apiClient';
 
 export default function EditarFacultad() {
   const { id } = useParams();
@@ -12,7 +12,7 @@ export default function EditarFacultad() {
   useEffect(() => {
     const fetchFacultad = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/facultades/${id}`);
+        const res = await apiClient.get(`/facultades/${id}`);
         setNombre(res.data.nombre);
       } catch (err) {
         console.error('Error al obtener facultad:', err);
@@ -28,7 +28,7 @@ export default function EditarFacultad() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.put(`${import.meta.env.VITE_API_URL}/facultades/${id}`, { nombre });
+      await apiClient.put(`/facultades/${id}`, { nombre });
       alert('Facultad actualizada exitosamente');
       navigate('/facultades');
     } catch (err) {

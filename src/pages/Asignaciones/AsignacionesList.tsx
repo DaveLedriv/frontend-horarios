@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
-import axios from 'axios';
+import apiClient from '../../services/apiClient';
 
 interface Asignacion {
   id: number;
@@ -15,7 +15,7 @@ export default function AsignacionesList() {
 
   const fetchAsignaciones = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/asignaciones`);
+      const res = await apiClient.get('/asignaciones');
       setAsignaciones(res.data);
     } catch (err) {
       console.error('Error al cargar asignaciones:', err);
@@ -30,7 +30,7 @@ export default function AsignacionesList() {
     if (!confirm) return;
 
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL}/asignaciones/${id}`);
+      await apiClient.delete(`/asignaciones/${id}`);
       await fetchAsignaciones();
     } catch (err) {
       console.error('Error al eliminar asignación:', err);

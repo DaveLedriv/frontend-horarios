@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 import DashboardLayout from '../../layouts/DashboardLayout';
+import apiClient from '../../services/apiClient';
 
 interface Facultad {
   id: number;
@@ -15,7 +15,7 @@ export default function FacultadesList() {
 
   const fetchFacultades = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/facultades`);
+      const res = await apiClient.get('/facultades');
       setFacultades(res.data);
     } catch (error) {
       console.error('Error al obtener facultades:', error);
@@ -30,7 +30,7 @@ export default function FacultadesList() {
     if (!confirmar) return;
 
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL}/facultades/${id}`);
+      await apiClient.delete(`/facultades/${id}`);
       await fetchFacultades(); // recargar la lista
     } catch (error) {
       console.error('Error al eliminar facultad:', error);

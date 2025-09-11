@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import axios from 'axios';
+import apiClient from '../services/apiClient';
 import { Disponibilidad } from '../hooks/useDisponibilidadDocente';
 
 export const useFormDisponibilidad = (docenteId: string) => {
@@ -16,7 +16,7 @@ export const useFormDisponibilidad = (docenteId: string) => {
     setLoading(true);
     setError(null);
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/disponibilidad`, {
+      await apiClient.post('/disponibilidad', {
         docente_id: Number(docenteId),
         disponibles: disponibilidad,
       });

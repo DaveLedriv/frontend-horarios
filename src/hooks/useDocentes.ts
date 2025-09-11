@@ -1,6 +1,6 @@
 // src/hooks/useDocentes.ts
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import apiClient from '../services/apiClient';
 import { Docente } from '../types/Docente';
 
 export const useDocentes = () => {
@@ -10,7 +10,7 @@ export const useDocentes = () => {
   const fetchDocentes = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/docentes`);
+      const res = await apiClient.get('/docentes');
       if (Array.isArray(res.data)) {
         setDocentes(res.data);
       } else {

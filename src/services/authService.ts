@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+import apiClient from './apiClient';
 
 export interface LoginCredentials {
   username: string;
@@ -17,7 +15,7 @@ export async function loginUser(credentials: LoginCredentials): Promise<LoginRes
   params.append('username', credentials.username);
   params.append('password', credentials.password);
 
-  const response = await axios.post(`${API_URL}/auth/token`, params, {
+  const response = await apiClient.post('/auth/token', params, {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
     },

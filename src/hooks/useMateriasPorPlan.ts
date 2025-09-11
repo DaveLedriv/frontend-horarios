@@ -1,6 +1,6 @@
 // src/hooks/useMateriasPorPlan.ts
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import apiClient from '../services/apiClient';
 import { Materia } from '../types/Materia';
 
 export const useMateriasPorPlan = (planId: number | string | undefined) => {
@@ -12,7 +12,7 @@ export const useMateriasPorPlan = (planId: number | string | undefined) => {
 
     const fetchMaterias = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/planes-estudio/${planId}/materias`);
+        const res = await apiClient.get(`/planes-estudio/${planId}/materias`);
         setMaterias(res.data.materias);
       } catch (error) {
         console.error('Error al cargar materias del plan', error);
