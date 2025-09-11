@@ -1,26 +1,12 @@
-import { useEffect, useState } from 'react';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../lib/api';
-import { useNavigate, Link } from 'react-router-dom';
-import { Materia } from '../../types/Materia';
+import { Link } from 'react-router-dom';
+import { useMaterias } from '../../hooks/useMaterias';
 import { useToast } from '../../hooks/useToast';
 
 export default function ListaMaterias() {
-  const [materias, setMaterias] = useState<Materia[]>([]);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const { materias, loading, error, refetch } = useMaterias();
   const { showSuccess, showError } = useToast();
-
-  const fetchMaterias = async () => {
-    try {
-      const res = await api.get('/materias');
-      setMaterias(res.data);
-    } catch (err) {
-      console.error('Error al obtener materias:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const eliminarMateria = async (id: number) => {
     const confirm = window.confirm('¿Estás seguro de eliminar esta materia?');
@@ -28,17 +14,13 @@ export default function ListaMaterias() {
 
     try {
       await api.delete(`/materias/${id}`);
-      await fetchMaterias(); // recarga sin refrescar la página
+      await refetch();
       showSuccess('Materia eliminada correctamente');
     } catch (err) {
       console.error('Error al eliminar materia:', err);
       showError('Ocurrió un error al eliminar la materia.');
     }
   };
-
-  useEffect(() => {
-    fetchMaterias();
-  }, []);
 
   return (
     <DashboardLayout>
@@ -54,6 +36,8 @@ export default function ListaMaterias() {
 
       {loading ? (
         <p className="text-center">Cargando...</p>
+      ) : error ? (
+        <p className="text-center">{error}</p>
       ) : materias.length === 0 ? (
         <p className="text-center">No hay materias registradas.</p>
       ) : (

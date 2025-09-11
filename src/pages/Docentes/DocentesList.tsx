@@ -1,28 +1,13 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../lib/api';
-import axios from 'axios';
-import { Docente } from '../../types/Docente';
+import { useDocentes } from '../../hooks/useDocentes';
 import { useToast } from '../../hooks/useToast';
 
 
 export default function DocentesList() {
-  const [docentes, setDocentes] = useState<Docente[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { docentes, loading, refetch } = useDocentes();
   const { showSuccess, showError } = useToast();
-
-  const fetchDocentes = async () => {
-    try {
-      const res = await api.get('/docentes');
-      setDocentes(res.data);
-    } catch (err) {
-      console.error('Error al cargar docentes:', err);
-      showError('No se pudieron cargar los docentes.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const eliminarDocente = async (id: number) => {
     const confirm = window.confirm('¿Estás seguro de eliminar este docente?');
@@ -30,17 +15,13 @@ export default function DocentesList() {
 
     try {
       await api.delete(`/docentes/${id}`);
-      await fetchDocentes();
+      await refetch();
       showSuccess('Docente eliminado correctamente');
     } catch (err) {
       console.error('Error al eliminar docente:', err);
       showError('No se pudo eliminar el docente.');
     }
   };
-
-  useEffect(() => {
-    fetchDocentes();
-  }, []);
 
   return (
     <DashboardLayout>

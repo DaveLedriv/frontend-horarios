@@ -1,29 +1,14 @@
 // src/pages/Materias/MateriasPorPlan.tsx
-import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../lib/api';
-import axios from 'axios';
-import { Materia } from '../../types/Materia';
+import { useMateriasPorPlan } from '../../hooks/useMateriasPorPlan';
 import { useToast } from '../../hooks/useToast';
 
 export default function MateriasPorPlan() {
   const { id } = useParams<{ id: string }>();
-  const [materias, setMaterias] = useState<Materia[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { materias, loading, refetch } = useMateriasPorPlan(id);
   const { showSuccess, showError } = useToast();
-
-  const fetchMaterias = async () => {
-    try {
-      const res = await api.get(`/planes-estudio/${id}/materias`);
-      setMaterias(res.data.materias);
-    } catch (err) {
-      console.error('Error al cargar materias:', err);
-      showError('No se pudieron cargar las materias.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const eliminarMateria = async (materiaId: number) => {
     const confirmar = window.confirm('¿Estás seguro de eliminar esta materia?');
@@ -31,17 +16,13 @@ export default function MateriasPorPlan() {
 
     try {
       await api.delete(`/materias/${materiaId}`);
-      await fetchMaterias();
+      await refetch();
       showSuccess('Materia eliminada correctamente');
     } catch (err) {
       console.error('Error al eliminar materia:', err);
       showError('No se pudo eliminar la materia.');
     }
   };
-
-  useEffect(() => {
-    fetchMaterias();
-  }, [id]);
 
   return (
     <DashboardLayout>

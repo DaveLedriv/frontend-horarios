@@ -1,27 +1,13 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../lib/api';
-import { Facultad } from '../../types/Facultad';
+import { useFacultades } from '../../hooks/useFacultades';
 import { useToast } from '../../hooks/useToast';
 
 
 export default function FacultadesList() {
-  const [facultades, setFacultades] = useState<Facultad[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { facultades, loading, refetch } = useFacultades();
   const { showSuccess, showError } = useToast();
-
-  const fetchFacultades = async () => {
-    try {
-      const res = await api.get('/facultades');
-      setFacultades(res.data);
-    } catch (error) {
-      console.error('Error al obtener facultades:', error);
-      showError('No se pudieron cargar las facultades.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleEliminar = async (id: number) => {
     const confirmar = window.confirm('¿Estás seguro de eliminar esta facultad?');
@@ -29,17 +15,13 @@ export default function FacultadesList() {
 
     try {
       await api.delete(`/facultades/${id}`);
-      await fetchFacultades(); // recargar la lista
+      await refetch();
       showSuccess('Facultad eliminada correctamente');
     } catch (error) {
       console.error('Error al eliminar facultad:', error);
       showError('No se pudo eliminar la facultad.');
     }
   };
-
-  useEffect(() => {
-    fetchFacultades();
-  }, []);
 
   return (
     <DashboardLayout>

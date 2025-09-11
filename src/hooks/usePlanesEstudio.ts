@@ -6,20 +6,22 @@ export function usePlanesEstudio() {
   const [planes, setPlanes] = useState<PlanEstudio[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchPlanes = async () => {
-      try {
-        const res = await api.get('/planes-estudio');
-        setPlanes(res.data);
-      } catch (error) {
-        console.error('Error al cargar planes de estudio:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchPlanes = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get('/planes-estudio');
+      setPlanes(res.data);
+    } catch (error) {
+      console.error('Error al cargar planes de estudio:', error);
+      setPlanes([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchPlanes();
   }, []);
 
-  return { planes, loading };
+  return { planes, loading, refetch: fetchPlanes };
 }

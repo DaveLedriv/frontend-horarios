@@ -6,20 +6,22 @@ export function useFacultades() {
   const [facultades, setFacultades] = useState<Facultad[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchFacultades = async () => {
-      try {
-        const res = await api.get('/facultades');
-        setFacultades(res.data);
-      } catch (err) {
-        console.error('Error al cargar facultades', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchFacultades = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get('/facultades');
+      setFacultades(res.data);
+    } catch (err) {
+      console.error('Error al cargar facultades', err);
+      setFacultades([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchFacultades();
   }, []);
 
-  return { facultades, loading };
+  return { facultades, loading, refetch: fetchFacultades };
 }
