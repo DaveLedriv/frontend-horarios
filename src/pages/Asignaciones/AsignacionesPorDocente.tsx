@@ -70,7 +70,7 @@ export default function AsignacionesPorDocente() {
                     <td className="px-4 py-2">{a.materia.nombre}</td>
                     <td className="px-4 py-2 space-x-2">
                       <Link
-                        to={`/asignaciones/detalle/${a.id}`}
+                        to={`/asignaciones/${a.id}`}
                         className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition text-sm"
                       >
                         Ver detalle

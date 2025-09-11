@@ -2,13 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import apiClient from '../../services/apiClient';
-
-interface PlanEstudio {
-  id: number;
-  nombre: string;
-  clave: string;
-  facultad_id: number;
-}
+import axios from 'axios';
+import { PlanEstudio } from '../../types/PlanEstudio';
 
 export default function PlanesEstudioList() {
   const [planes, setPlanes] = useState<PlanEstudio[]>([]);

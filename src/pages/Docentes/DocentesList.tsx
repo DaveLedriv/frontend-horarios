@@ -2,13 +2,9 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import apiClient from '../../services/apiClient';
+import axios from 'axios';
+import { Docente } from '../../types/Docente';
 
-interface Docente {
-  id: number;
-  nombre: string;
-  correo: string;
-  numero_empleado: string;
-}
 
 export default function DocentesList() {
   const [docentes, setDocentes] = useState<Docente[]>([]);
