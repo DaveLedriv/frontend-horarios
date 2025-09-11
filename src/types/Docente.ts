@@ -2,7 +2,7 @@
 export interface Docente {
   id: number;
   nombre: string;
-  rfc: string;
   correo: string;
+  numero_empleado: string;
   facultad_id: number;
 }

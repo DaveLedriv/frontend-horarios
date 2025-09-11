@@ -2,15 +2,7 @@ import { useEffect, useState } from 'react';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-
-interface Materia {
-  id: number;
-  nombre: string;
-  codigo: string;
-  tipo: string;
-  creditos: number;
-  plan_estudio_id: number;
-}
+import { Materia } from '../../types/Materia';
 
 export default function ListaMaterias() {
   const [materias, setMaterias] = useState<Materia[]>([]);

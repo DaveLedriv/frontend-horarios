@@ -2,12 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import DashboardLayout from '../../layouts/DashboardLayout';
-
-interface Facultad {
-  id: number;
-  nombre: string;
-  descripcion: string;
-}
+import { Facultad } from '../../types/Facultad';
 
 export default function FacultadesList() {
   const [facultades, setFacultades] = useState<Facultad[]>([]);
