@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import apiClient from '../../services/apiClient';
+import { useToast } from '../../hooks/useToast';
 
 interface Asignacion {
   id: number;
@@ -12,6 +13,7 @@ interface Asignacion {
 export default function AsignacionesList() {
   const [asignaciones, setAsignaciones] = useState<Asignacion[]>([]);
   const [loading, setLoading] = useState(true);
+  const { showSuccess, showError } = useToast();
 
   const fetchAsignaciones = async () => {
     try {
@@ -19,7 +21,7 @@ export default function AsignacionesList() {
       setAsignaciones(res.data);
     } catch (err) {
       console.error('Error al cargar asignaciones:', err);
-      alert('No se pudieron cargar las asignaciones.');
+      showError('No se pudieron cargar las asignaciones.');
     } finally {
       setLoading(false);
     }
@@ -32,9 +34,10 @@ export default function AsignacionesList() {
     try {
       await apiClient.delete(`/asignaciones/${id}`);
       await fetchAsignaciones();
+      showSuccess('Asignación eliminada correctamente');
     } catch (err) {
       console.error('Error al eliminar asignación:', err);
-      alert('No se pudo eliminar la asignación.');
+      showError('No se pudo eliminar la asignación.');
     }
   };
 

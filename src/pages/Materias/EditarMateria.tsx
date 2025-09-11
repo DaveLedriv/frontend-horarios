@@ -4,6 +4,7 @@ import DashboardLayout from '../../layouts/DashboardLayout';
 import apiClient from '../../services/apiClient';
 import { usePlanesEstudio } from '../../hooks/usePlanesEstudio';
 import { Materia } from '../../types/Materia';
+import { useToast } from '../../hooks/useToast';
 
 export default function EditarMateria() {
   const { id } = useParams<{ id: string }>();
@@ -20,6 +21,7 @@ export default function EditarMateria() {
   });
 
   const { planes, loading: loadingPlanes } = usePlanesEstudio();
+  const { showSuccess, showError } = useToast();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -28,7 +30,7 @@ export default function EditarMateria() {
         setMateria(res.data);
       } catch (err) {
         console.error('Error al cargar materia:', err);
-        alert('No se pudo cargar la materia.');
+        showError('No se pudo cargar la materia.');
       } finally {
         setLoading(false);
       }
@@ -49,11 +51,11 @@ export default function EditarMateria() {
     e.preventDefault();
     try {
       await apiClient.put(`/materias/${id}`, materia);
-      alert('Materia actualizada correctamente');
+      showSuccess('Materia actualizada correctamente');
       navigate('/materias');
     } catch (err) {
       console.error('Error al actualizar materia:', err);
-      alert('Ocurrió un error al actualizar la materia.');
+      showError('Ocurrió un error al actualizar la materia.');
     }
   };
 

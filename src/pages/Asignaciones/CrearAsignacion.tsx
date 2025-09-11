@@ -9,6 +9,7 @@ import { usePlanesEstudio } from '../../hooks/usePlanesEstudio';
 import { Docente } from '../../types/Docente';
 import { Materia } from '../../types/Materia';
 import { PlanEstudio } from '../../types/PlanEstudio';
+import { useToast } from '../../hooks/useToast';
 
 export default function CrearAsignacion() {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ export default function CrearAsignacion() {
     docente_id: '',
     materia_id: '',
   });
+  const { showSuccess, showError } = useToast();
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -38,11 +40,11 @@ export default function CrearAsignacion() {
         docente_id: Number(form.docente_id),
         materia_id: Number(form.materia_id),
       });
-      alert('Asignación creada correctamente');
+      showSuccess('Asignación creada correctamente');
       navigate(-1);
     } catch (error) {
       console.error('Error al crear asignación', error);
-      alert('No se pudo crear la asignación.');
+      showError('No se pudo crear la asignación.');
     }
   };
 

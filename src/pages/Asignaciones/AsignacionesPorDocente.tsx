@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import apiClient from '../../services/apiClient';
 import { useDocentes } from '../../hooks/useDocentes';
+import { useToast } from '../../hooks/useToast';
 
 interface Asignacion {
   id: number;
@@ -16,6 +17,7 @@ export default function AsignacionesPorDocente() {
   const [docenteId, setDocenteId] = useState('');
   const [asignaciones, setAsignaciones] = useState<Asignacion[]>([]);
   const [loading, setLoading] = useState(false);
+  const { showError } = useToast();
 
   const handleSelectDocente = async (id: string) => {
     setDocenteId(id);
@@ -25,7 +27,7 @@ export default function AsignacionesPorDocente() {
       setAsignaciones(res.data);
     } catch (error) {
       console.error('Error al obtener asignaciones:', error);
-      alert('No se pudieron cargar las asignaciones del docente.');
+      showError('No se pudieron cargar las asignaciones del docente.');
     } finally {
       setLoading(false);
     }
