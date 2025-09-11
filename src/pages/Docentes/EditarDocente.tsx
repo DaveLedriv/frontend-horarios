@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
 import DashboardLayout from '../../layouts/DashboardLayout';
+import apiClient from '../../services/apiClient';
 import { useFacultades } from '../../hooks/useFacultades';
 import { Facultad } from '../../types/Facultad';
 
@@ -21,7 +21,7 @@ export default function EditarDocente() {
   useEffect(() => {
     const fetchDocente = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/docentes/${id}`);
+        const res = await apiClient.get(`/docentes/${id}`);
         setDocente(res.data);
       } catch (err) {
         console.error('Error al obtener docente:', err);
@@ -42,7 +42,7 @@ export default function EditarDocente() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.put(`${import.meta.env.VITE_API_URL}/docentes/${id}`, docente);
+      await apiClient.put(`/docentes/${id}`, docente);
       alert('Docente actualizado correctamente');
       navigate('/docentes');
     } catch (err) {

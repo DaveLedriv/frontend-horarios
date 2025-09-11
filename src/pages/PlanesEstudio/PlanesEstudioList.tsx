@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
+import apiClient from '../../services/apiClient';
 import axios from 'axios';
 import { PlanEstudio } from '../../types/PlanEstudio';
 
@@ -11,7 +12,7 @@ export default function PlanesEstudioList() {
 
   const fetchPlanes = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/planes-estudio`);
+      const res = await apiClient.get('/planes-estudio');
       setPlanes(res.data);
     } catch (error) {
       console.error('Error al obtener planes de estudio:', error);
@@ -25,7 +26,7 @@ export default function PlanesEstudioList() {
     if (!confirmar) return;
 
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL}/planes-estudio/${id}`);
+      await apiClient.delete(`/planes-estudio/${id}`);
       await fetchPlanes();
     } catch (error) {
       console.error('Error al eliminar el plan:', error);

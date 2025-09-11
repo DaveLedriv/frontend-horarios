@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
+import apiClient from '../../services/apiClient';
 import axios from 'axios';
 import { Docente } from '../../types/Docente';
+
 
 export default function DocentesList() {
   const [docentes, setDocentes] = useState<Docente[]>([]);
@@ -10,7 +12,7 @@ export default function DocentesList() {
 
   const fetchDocentes = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/docentes`);
+      const res = await apiClient.get('/docentes');
       setDocentes(res.data);
     } catch (err) {
       console.error('Error al cargar docentes:', err);
@@ -25,7 +27,7 @@ export default function DocentesList() {
     if (!confirm) return;
 
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL}/docentes/${id}`);
+      await apiClient.delete(`/docentes/${id}`);
       await fetchDocentes();
     } catch (err) {
       console.error('Error al eliminar docente:', err);

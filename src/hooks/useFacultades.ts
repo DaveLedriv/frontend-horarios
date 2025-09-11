@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import apiClient from '../services/apiClient';
 import { Facultad } from '../types/Facultad';
 
 export function useFacultades() {
@@ -9,7 +9,7 @@ export function useFacultades() {
   useEffect(() => {
     const fetchFacultades = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/facultades`);
+        const res = await apiClient.get('/facultades');
         setFacultades(res.data);
       } catch (err) {
         console.error('Error al cargar facultades', err);

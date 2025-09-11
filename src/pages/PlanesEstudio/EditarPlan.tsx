@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
 import DashboardLayout from '../../layouts/DashboardLayout';
+import apiClient from '../../services/apiClient';
 import { useFacultades } from '../../hooks/useFacultades';
 import { Facultad } from '../../types/Facultad';
 
@@ -19,7 +19,7 @@ export default function EditarPlanEstudio() {
   useEffect(() => {
     const fetchPlan = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/planes-estudio/${id}`);
+        const res = await apiClient.get(`/planes-estudio/${id}`);
         setPlan(res.data);
       } catch (err) {
         console.error('Error al cargar plan:', err);
@@ -43,7 +43,7 @@ export default function EditarPlanEstudio() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.put(`${import.meta.env.VITE_API_URL}/planes-estudio/${id}`, plan);
+      await apiClient.put(`/planes-estudio/${id}`, plan);
       alert('Plan de estudio actualizado correctamente');
       navigate('/planes-estudio');
     } catch (err) {

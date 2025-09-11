@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
+import apiClient from '../../services/apiClient';
 import axios from 'axios';
 import { Materia } from '../../types/Materia';
 
@@ -12,7 +13,7 @@ export default function MateriasPorPlan() {
 
   const fetchMaterias = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/planes-estudio/${id}/materias`);
+      const res = await apiClient.get(`/planes-estudio/${id}/materias`);
       setMaterias(res.data.materias);
     } catch (err) {
       console.error('Error al cargar materias:', err);
@@ -27,7 +28,7 @@ export default function MateriasPorPlan() {
     if (!confirmar) return;
 
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL}/materias/${materiaId}`);
+      await apiClient.delete(`/materias/${materiaId}`);
       await fetchMaterias();
     } catch (err) {
       console.error('Error al eliminar materia:', err);

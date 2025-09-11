@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import axios from 'axios';
+import apiClient from '../../services/apiClient';
 
 interface Props {
   onSuccess: () => void;
@@ -20,7 +20,7 @@ export default function MateriaForm({ onSuccess }: Props) {
     setLoading(true);
 
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/materias`, {
+      await apiClient.post('/materias', {
         nombre,
         codigo,
         creditos: Number(creditos),

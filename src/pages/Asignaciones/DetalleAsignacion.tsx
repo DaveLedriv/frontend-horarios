@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
 import DashboardLayout from '../../layouts/DashboardLayout';
+import apiClient from '../../services/apiClient';
 
 interface Asignacion {
   id: number;
@@ -27,7 +27,7 @@ export default function DetalleAsignacion() {
   useEffect(() => {
     const fetchAsignacion = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/asignaciones/${id}`);
+        const res = await apiClient.get(`/asignaciones/${id}`);
         setAsignacion(res.data);
       } catch (error) {
         console.error('Error al obtener la asignación:', error);

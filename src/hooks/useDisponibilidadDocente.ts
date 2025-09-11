@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import apiClient from '../services/apiClient';
 
 export interface Disponibilidad {
   dia: string;
@@ -20,9 +20,7 @@ export const useDisponibilidadDocente = (docenteId: string | null) => {
     const fetchDisponibilidad = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_URL}/docentes/${docenteId}/disponibilidad`
-        );
+        const res = await apiClient.get(`/docentes/${docenteId}/disponibilidad`);
         setDisponibilidad(res.data.disponibles || []);
       } catch (err) {
         console.error('Error al cargar disponibilidad:', err);

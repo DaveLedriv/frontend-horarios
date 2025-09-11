@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import DashboardLayout from '../../layouts/DashboardLayout';
-import axios from 'axios';
+import apiClient from '../../services/apiClient';
 import { useNavigate, Link } from 'react-router-dom';
 import { Materia } from '../../types/Materia';
 
@@ -11,7 +11,7 @@ export default function ListaMaterias() {
 
   const fetchMaterias = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/materias`);
+      const res = await apiClient.get('/materias');
       setMaterias(res.data);
     } catch (err) {
       console.error('Error al obtener materias:', err);
@@ -25,7 +25,7 @@ export default function ListaMaterias() {
     if (!confirm) return;
 
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL}/materias/${id}`);
+      await apiClient.delete(`/materias/${id}`);
       await fetchMaterias(); // recarga sin refrescar la página
     } catch (err) {
       console.error('Error al eliminar materia:', err);

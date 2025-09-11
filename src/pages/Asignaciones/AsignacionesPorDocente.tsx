@@ -1,8 +1,8 @@
 // src/pages/Asignaciones/AsignacionesPorDocente.tsx
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 import DashboardLayout from '../../layouts/DashboardLayout';
+import apiClient from '../../services/apiClient';
 import { useDocentes } from '../../hooks/useDocentes';
 
 interface Asignacion {
@@ -21,7 +21,7 @@ export default function AsignacionesPorDocente() {
     setDocenteId(id);
     setLoading(true);
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/asignaciones/docente/${id}`);
+      const res = await apiClient.get(`/asignaciones/docente/${id}`);
       setAsignaciones(res.data);
     } catch (error) {
       console.error('Error al obtener asignaciones:', error);

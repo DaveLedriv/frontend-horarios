@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import apiClient from '../services/apiClient';
 import { PlanEstudio } from '../types/PlanEstudio';
 
 export function usePlanesEstudio() {
@@ -9,7 +9,7 @@ export function usePlanesEstudio() {
   useEffect(() => {
     const fetchPlanes = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/planes-estudio`);
+        const res = await apiClient.get('/planes-estudio');
         setPlanes(res.data);
       } catch (error) {
         console.error('Error al cargar planes de estudio:', error);

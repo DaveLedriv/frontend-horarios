@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import DashboardLayout from '../../layouts/DashboardLayout';
+import apiClient from '../../services/apiClient';
 import { useDocentes } from '../../hooks/useDocentes';
 
 interface BloqueDisponible {
@@ -23,8 +23,8 @@ export default function VerDisponibilidad() {
     if (!docenteId) return;
 
     try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/disponibilidad/docente/${docenteId}`
+      const res = await apiClient.get(
+        `/disponibilidad/docente/${docenteId}`
       );
       setDisponibilidad(res.data.disponibles);
       setError('');
@@ -36,7 +36,7 @@ export default function VerDisponibilidad() {
 
   const eliminarBloque = async (id: number) => {
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL}/disponibilidad/${id}`);
+      await apiClient.delete(`/disponibilidad/${id}`);
       setDisponibilidad((prev) => prev.filter((b) => b.id !== id));
     } catch (err) {
       console.error(err);
