@@ -1,18 +1,19 @@
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../lib/api';
 import { useDocentes } from '../../hooks/useDocentes';
 import { useToast } from '../../hooks/useToast';
+import ConfirmDialog from '../../components/ConfirmDialog';
 
 
 export default function DocentesList() {
   const { docentes, loading, refetch } = useDocentes();
   const { showSuccess, showError } = useToast();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const eliminarDocente = async (id: number) => {
-    const confirm = window.confirm('¿Estás seguro de eliminar este docente?');
-    if (!confirm) return;
-
     try {
       await api.delete(`/docentes/${id}`);
       await refetch();
@@ -21,6 +22,22 @@ export default function DocentesList() {
       console.error('Error al eliminar docente:', err);
       showError('No se pudo eliminar el docente.');
     }
+  };
+
+  const handleEliminar = (id: number) => {
+    setSelectedId(id);
+    setDialogOpen(true);
+  };
+
+  const handleConfirm = () => {
+    if (selectedId !== null) {
+      eliminarDocente(selectedId);
+    }
+    setDialogOpen(false);
+  };
+
+  const handleCancel = () => {
+    setDialogOpen(false);
   };
 
   return (
@@ -63,14 +80,14 @@ export default function DocentesList() {
                     >
                       Editar
                     </Link>
-                    <Link
+                  <Link
                       to={`/asignaciones/docente/${d.id}`}
                       className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition text-sm"
                     >
                       Ver asignaciones
                     </Link>
                     <button
-                      onClick={() => eliminarDocente(d.id)}
+                      onClick={() => handleEliminar(d.id)}
                       className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition text-sm"
                     >
                       Eliminar
@@ -82,6 +99,15 @@ export default function DocentesList() {
           </table>
         </div>
       )}
+      <ConfirmDialog
+        isOpen={dialogOpen}
+        title="Eliminar docente"
+        message="¿Estás seguro de eliminar este docente?"
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
     </DashboardLayout>
   );
 }

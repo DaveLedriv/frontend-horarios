@@ -1,17 +1,18 @@
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../lib/api';
 import { usePlanesEstudio } from '../../hooks/usePlanesEstudio';
 import { useToast } from '../../hooks/useToast';
+import ConfirmDialog from '../../components/ConfirmDialog';
 
 export default function PlanesEstudioList() {
   const { planes, loading, refetch } = usePlanesEstudio();
   const { showSuccess, showError } = useToast();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const eliminarPlan = async (id: number) => {
-    const confirmar = window.confirm('¿Estás seguro de eliminar este plan de estudio?');
-    if (!confirmar) return;
-
     try {
       await api.delete(`/planes-estudio/${id}`);
       await refetch();
@@ -20,6 +21,22 @@ export default function PlanesEstudioList() {
       console.error('Error al eliminar el plan:', error);
       showError('No se pudo eliminar el plan de estudio.');
     }
+  };
+
+  const handleEliminar = (id: number) => {
+    setSelectedId(id);
+    setDialogOpen(true);
+  };
+
+  const handleConfirm = () => {
+    if (selectedId !== null) {
+      eliminarPlan(selectedId);
+    }
+    setDialogOpen(false);
+  };
+
+  const handleCancel = () => {
+    setDialogOpen(false);
   };
 
   return (
@@ -70,7 +87,7 @@ export default function PlanesEstudioList() {
 </Link>
 
                     <button
-                      onClick={() => eliminarPlan(plan.id)}
+                      onClick={() => handleEliminar(plan.id)}
                       className="inline-block bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition text-sm"
                     >
                       Eliminar
@@ -82,6 +99,15 @@ export default function PlanesEstudioList() {
           </table>
         </div>
       )}
+      <ConfirmDialog
+        isOpen={dialogOpen}
+        title="Eliminar plan de estudio"
+        message="¿Estás seguro de eliminar este plan de estudio?"
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
     </DashboardLayout>
   );
 }

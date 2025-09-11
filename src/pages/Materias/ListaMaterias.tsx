@@ -1,17 +1,18 @@
 import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../lib/api';
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import { useMaterias } from '../../hooks/useMaterias';
 import { useToast } from '../../hooks/useToast';
+import ConfirmDialog from '../../components/ConfirmDialog';
 
 export default function ListaMaterias() {
   const { materias, loading, error, refetch } = useMaterias();
   const { showSuccess, showError } = useToast();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const eliminarMateria = async (id: number) => {
-    const confirm = window.confirm('¿Estás seguro de eliminar esta materia?');
-    if (!confirm) return;
-
     try {
       await api.delete(`/materias/${id}`);
       await refetch();
@@ -20,6 +21,22 @@ export default function ListaMaterias() {
       console.error('Error al eliminar materia:', err);
       showError('Ocurrió un error al eliminar la materia.');
     }
+  };
+
+  const handleEliminar = (id: number) => {
+    setSelectedId(id);
+    setDialogOpen(true);
+  };
+
+  const handleConfirm = () => {
+    if (selectedId !== null) {
+      eliminarMateria(selectedId);
+    }
+    setDialogOpen(false);
+  };
+
+  const handleCancel = () => {
+    setDialogOpen(false);
   };
 
   return (
@@ -69,7 +86,7 @@ export default function ListaMaterias() {
                       Editar
                     </Link>
                     <button
-                      onClick={() => eliminarMateria(m.id)}
+                      onClick={() => handleEliminar(m.id)}
                       className="inline-block bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition text-sm"
                     >
                       Eliminar
@@ -81,6 +98,15 @@ export default function ListaMaterias() {
           </table>
         </div>
       )}
+      <ConfirmDialog
+        isOpen={dialogOpen}
+        title="Eliminar materia"
+        message="¿Estás seguro de eliminar esta materia?"
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
     </DashboardLayout>
   );
 }
