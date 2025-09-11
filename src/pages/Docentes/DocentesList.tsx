@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
-import apiClient from '../../services/apiClient';
+import api from '../../lib/api';
 import axios from 'axios';
 import { Docente } from '../../types/Docente';
 import { useToast } from '../../hooks/useToast';
@@ -14,7 +14,7 @@ export default function DocentesList() {
 
   const fetchDocentes = async () => {
     try {
-      const res = await apiClient.get('/docentes');
+      const res = await api.get('/docentes');
       setDocentes(res.data);
     } catch (err) {
       console.error('Error al cargar docentes:', err);
@@ -29,7 +29,7 @@ export default function DocentesList() {
     if (!confirm) return;
 
     try {
-      await apiClient.delete(`/docentes/${id}`);
+      await api.delete(`/docentes/${id}`);
       await fetchDocentes();
       showSuccess('Docente eliminado correctamente');
     } catch (err) {

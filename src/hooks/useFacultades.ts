@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import apiClient from '../services/apiClient';
+import api from '../lib/api';
 import { Facultad } from '../types/Facultad';
 
 export function useFacultades() {
@@ -9,7 +9,7 @@ export function useFacultades() {
   useEffect(() => {
     const fetchFacultades = async () => {
       try {
-        const res = await apiClient.get('/facultades');
+        const res = await api.get('/facultades');
         setFacultades(res.data);
       } catch (err) {
         console.error('Error al cargar facultades', err);

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
-import apiClient from '../../services/apiClient';
+import api from '../../lib/api';
 import { usePlanesEstudio } from '../../hooks/usePlanesEstudio';
 import { Materia } from '../../types/Materia';
 import { useToast } from '../../hooks/useToast';
@@ -26,7 +26,7 @@ export default function EditarMateria() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await apiClient.get(`/materias/${id}`);
+        const res = await api.get(`/materias/${id}`);
         setMateria(res.data);
       } catch (err) {
         console.error('Error al cargar materia:', err);
@@ -50,7 +50,7 @@ export default function EditarMateria() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await apiClient.put(`/materias/${id}`, materia);
+      await api.put(`/materias/${id}`, materia);
       showSuccess('Materia actualizada correctamente');
       navigate('/materias');
     } catch (err) {

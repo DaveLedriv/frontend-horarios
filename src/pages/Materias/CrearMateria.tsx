@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
-import apiClient from '../../services/apiClient';
+import api from '../../lib/api';
 import { usePlanesEstudio } from '../../hooks/usePlanesEstudio';
 import { PlanEstudio } from '../../types/PlanEstudio';
 import { useToast } from '../../hooks/useToast';
@@ -30,7 +30,7 @@ export default function CrearMateria() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await apiClient.post('/materias', materia);
+      await api.post('/materias', materia);
       showSuccess('Materia creada exitosamente');
       if (preloadedPlanId) {
         navigate(`/planes-estudio/${preloadedPlanId}/materias`);

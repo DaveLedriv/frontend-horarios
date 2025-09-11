@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
-import apiClient from '../../services/apiClient';
+import api from '../../lib/api';
 import { useToast } from '../../hooks/useToast';
 
 interface Asignacion {
@@ -17,7 +17,7 @@ export default function AsignacionesList() {
 
   const fetchAsignaciones = async () => {
     try {
-      const res = await apiClient.get('/asignaciones');
+      const res = await api.get('/asignaciones');
       setAsignaciones(res.data);
     } catch (err) {
       console.error('Error al cargar asignaciones:', err);
@@ -32,7 +32,7 @@ export default function AsignacionesList() {
     if (!confirm) return;
 
     try {
-      await apiClient.delete(`/asignaciones/${id}`);
+      await api.delete(`/asignaciones/${id}`);
       await fetchAsignaciones();
       showSuccess('Asignación eliminada correctamente');
     } catch (err) {

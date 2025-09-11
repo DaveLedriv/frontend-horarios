@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
-import apiClient from '../../services/apiClient';
+import api from '../../lib/api';
 import { useDocentes } from '../../hooks/useDocentes';
 import { useMateriasPorPlan } from '../../hooks/useMateriasPorPlan';
 import { usePlanesEstudio } from '../../hooks/usePlanesEstudio';
@@ -36,7 +36,7 @@ export default function CrearAsignacion() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await apiClient.post('/asignaciones', {
+      await api.post('/asignaciones', {
         docente_id: Number(form.docente_id),
         materia_id: Number(form.materia_id),
       });

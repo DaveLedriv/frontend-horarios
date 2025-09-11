@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
-import apiClient from '../../services/apiClient';
+import api from '../../lib/api';
 import axios from 'axios';
 import { Materia } from '../../types/Materia';
 import { useToast } from '../../hooks/useToast';
@@ -15,7 +15,7 @@ export default function MateriasPorPlan() {
 
   const fetchMaterias = async () => {
     try {
-      const res = await apiClient.get(`/planes-estudio/${id}/materias`);
+      const res = await api.get(`/planes-estudio/${id}/materias`);
       setMaterias(res.data.materias);
     } catch (err) {
       console.error('Error al cargar materias:', err);
@@ -30,7 +30,7 @@ export default function MateriasPorPlan() {
     if (!confirmar) return;
 
     try {
-      await apiClient.delete(`/materias/${materiaId}`);
+      await api.delete(`/materias/${materiaId}`);
       await fetchMaterias();
       showSuccess('Materia eliminada correctamente');
     } catch (err) {
