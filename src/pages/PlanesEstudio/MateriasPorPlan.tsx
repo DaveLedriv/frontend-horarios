@@ -3,14 +3,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import axios from 'axios';
-
-interface Materia {
-  id: number;
-  nombre: string;
-  codigo: string;
-  tipo: string;
-  creditos: number;
-}
+import { Materia } from '../../types/Materia';
 
 export default function MateriasPorPlan() {
   const { id } = useParams<{ id: string }>();
