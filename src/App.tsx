@@ -25,6 +25,7 @@ import VerDisponibilidad from './pages/Disponibilidad/VerDisponibilidad';
 import CrearDisponibilidad from './pages/Disponibilidad/CrearDisponibilidad';
 import ClaseProgramadaForm from './pages/Horarios/ClaseProgramadaForm';
 import HorariosPorDocente from './pages/Horarios/HorariosPorDocente';
+import HorariosPorAula from './pages/Horarios/HorariosPorAula';
 import AulasDisponibles from './pages/Horarios/AulasDisponibles';
 
 
@@ -60,6 +61,7 @@ function App() {
           <Route path="/horarios/crear" element={<ClaseProgramadaForm />} />
           <Route path="/horarios/editar/:id" element={<ClaseProgramadaForm />} />
           <Route path="/horarios/docente/:docenteId" element={<HorariosPorDocente />} />
+          <Route path="/horarios/aula/:aulaId" element={<HorariosPorAula />} />
           <Route path="/horarios/aulas-disponibles" element={<AulasDisponibles />} />
 
         </Route>
