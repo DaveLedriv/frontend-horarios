@@ -8,14 +8,7 @@ import { useAulas } from '../../hooks/useAulas';
 import { useToast } from '../../hooks/useToast';
 import { useDisponibilidadDocente } from '../../hooks/useDisponibilidadDocente';
 import { ClaseProgramada } from '../../types/ClaseProgramada';
-
-interface FormState {
-  materia_id: string;
-  aula_id: string;
-  dia: string;
-  hora_inicio: string;
-  hora_fin: string;
-}
+import { checkBlockConflicts, FormState } from './checkBlockConflicts';
 
 function toAmPm(time: string): string {
   const [hourStr, minuteStr] = time.split(':');
@@ -145,73 +138,16 @@ export default function ClaseProgramadaForm() {
     }
   }, [id, isEdit, showError]);
 
-  const checkBlockConflicts = async (
-    bloque: FormState
-  ): Promise<string | null> => {
-    if (
-      !docenteId ||
-      !bloque.aula_id ||
-      !bloque.dia ||
-      !bloque.hora_inicio ||
-      !bloque.hora_fin
-    ) {
-      return null;
-    }
-    try {
-      const [docRes, aulaRes] = await Promise.all([
-        api.get<{ clases: ClaseProgramada[] }>(
-          `/horarios/docente/${docenteId}`
-        ),
-        api.get<{ clases: ClaseProgramada[] }>(
-          `/horarios/aula/${bloque.aula_id}`
-        ),
-      ]);
-
-      const hasConflict = (
-        clases: ClaseProgramada[],
-        tipo: 'docente' | 'aula'
-      ): string | null => {
-        const conflictClass = clases.find((c) => {
-          if (isEdit && id && c.id === Number(id)) return false;
-          return (
-            c.dia === bloque.dia &&
-            !(
-              bloque.hora_fin <= c.hora_inicio ||
-              bloque.hora_inicio >= c.hora_fin
-            )
-          );
-        });
-        if (conflictClass) {
-          const msgBase =
-            tipo === 'docente'
-              ? 'El docente ya tiene clase'
-              : 'El aula está ocupada';
-          return `${msgBase} el ${conflictClass.dia} de ${conflictClass.hora_inicio.slice(
-            0,
-            5
-          )} a ${conflictClass.hora_fin.slice(0, 5)}`;
-        }
-        return null;
-      };
-
-      const docenteClases: ClaseProgramada[] = docRes.data.clases;
-      const aulaClases: ClaseProgramada[] = aulaRes.data.clases;
-      const docenteConflict = hasConflict(docenteClases, 'docente');
-      if (docenteConflict) return docenteConflict;
-      const aulaConflict = hasConflict(aulaClases, 'aula');
-      if (aulaConflict) return aulaConflict;
-      return null;
-    } catch (err) {
-      console.error('Error verificando conflictos', err);
-      return null;
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isEdit && id) {
       const bloque = bloques[0];
-      const conflictMsg = await checkBlockConflicts(bloque);
+      const conflictMsg = await checkBlockConflicts(
+        bloque,
+        docenteId,
+        isEdit,
+        id
+      );
       if (conflictMsg) {
         showError(conflictMsg);
         return;
@@ -242,7 +178,12 @@ export default function ClaseProgramadaForm() {
     let huboError = false;
     for (let i = 0; i < bloques.length; i++) {
       const b = bloques[i];
-      const conflictMsg = await checkBlockConflicts(b);
+      const conflictMsg = await checkBlockConflicts(
+        b,
+        docenteId,
+        isEdit,
+        id
+      );
       if (conflictMsg) {
         showError(`Bloque ${i + 1}: ${conflictMsg}`);
         huboError = true;
