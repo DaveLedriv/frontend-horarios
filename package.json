@@ -6,7 +6,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "init:tailwind": "tailwindcss init -p"
+    "init:tailwind": "tailwindcss init -p",
+    "test": "vitest"
   },
   "dependencies": {
     "axios": "^1.6.8",
@@ -25,6 +26,7 @@
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.3.3",
-    "vite": "^5.2.10"
+    "vite": "^5.2.10",
+    "vitest": "^3.2.4"
   }
 }
