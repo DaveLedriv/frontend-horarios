@@ -17,15 +17,15 @@ export default function HorariosPorDocente() {
   useEffect(() => {
     if (docenteId) {
       api
-        .get<ClaseProgramada[]>(`/horarios/docente/${docenteId}`)
+        .get<{ clases: ClaseProgramada[] }>(`/horarios/docente/${docenteId}`)
         .then((res) => {
-          const valid = res.data.filter(
+          const valid = res.data.clases.filter(
             (c) => c.hora_inicio && c.hora_fin && c.dia,
           );
-          if (valid.length !== res.data.length) {
+          if (valid.length !== res.data.clases.length) {
             console.warn(
               'Datos incompletos en la respuesta de horarios',
-              res.data,
+              res.data.clases,
             );
             window.alert(
               'La API devolvió datos incompletos para algunas clases. Se omitieron entradas inválidas.',
