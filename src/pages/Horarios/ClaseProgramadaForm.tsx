@@ -27,6 +27,8 @@ export default function ClaseProgramadaForm() {
   const { aulas } = useAulas();
   const { showSuccess, showError } = useToast();
 
+  const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
   const [bloques, setBloques] = useState<FormState[]>([
     {
       docente_id: '',
@@ -297,16 +299,21 @@ export default function ClaseProgramadaForm() {
                 <label className="block text-sm font-medium text-gray-700">
                   Día
                 </label>
-                <input
-                  type="text"
+                <select
                   value={bloque.dia}
                   onChange={(e) =>
                     actualizarBloque(index, 'dia', e.target.value)
                   }
                   className="w-full mt-1 px-4 py-2 border rounded-lg"
-                  placeholder="Lunes"
                   required
-                />
+                >
+                  <option value="">Selecciona un día</option>
+                  {dias.map((dia) => (
+                    <option key={dia} value={dia}>
+                      {dia}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="flex gap-4">
