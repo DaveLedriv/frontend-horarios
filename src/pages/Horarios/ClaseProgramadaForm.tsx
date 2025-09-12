@@ -6,6 +6,7 @@ import { useDocentes } from '../../hooks/useDocentes';
 import { useMaterias } from '../../hooks/useMaterias';
 import { useAulas } from '../../hooks/useAulas';
 import { useToast } from '../../hooks/useToast';
+import { useDisponibilidadDocente } from '../../hooks/useDisponibilidadDocente';
 import { ClaseProgramada } from '../../types/ClaseProgramada';
 
 interface FormState {
@@ -35,6 +36,8 @@ export default function ClaseProgramadaForm() {
   const { materias } = useMaterias();
   const { aulas } = useAulas();
   const { showSuccess, showError } = useToast();
+  const { disponibilidad: disponibilidadDocente } =
+    useDisponibilidadDocente(docenteId);
 
   const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -48,6 +51,47 @@ export default function ClaseProgramadaForm() {
       hora_fin: '',
     },
   ]);
+
+  const generarHoras = (inicio: string, fin: string) => {
+    const times: string[] = [];
+    const [sh, sm] = inicio.split(':').map(Number);
+    const [eh, em] = fin.split(':').map(Number);
+    let start = sh * 60 + sm;
+    const end = eh * 60 + em;
+    for (; start <= end; start += 30) {
+      const h = Math.floor(start / 60)
+        .toString()
+        .padStart(2, '0');
+      const m = (start % 60).toString().padStart(2, '0');
+      times.push(`${h}:${m}`);
+    }
+    return times;
+  };
+
+  const obtenerHorasInicio = (dia: string) => {
+    return disponibilidadDocente
+      .filter((d) => d.dia.toLowerCase() === dia.toLowerCase())
+      .flatMap((d) =>
+        generarHoras(
+          d.hora_inicio.slice(0, 5),
+          d.hora_fin.slice(0, 5)
+        ).slice(0, -1)
+      );
+  };
+
+  const obtenerHorasFin = (dia: string, horaInicio: string) => {
+    const bloque = disponibilidadDocente.find((d) => {
+      const inicio = d.hora_inicio.slice(0, 5);
+      const fin = d.hora_fin.slice(0, 5);
+      return (
+        d.dia.toLowerCase() === dia.toLowerCase() &&
+        horaInicio >= inicio &&
+        horaInicio < fin
+      );
+    });
+    if (!bloque) return [];
+    return generarHoras(horaInicio, bloque.hora_fin.slice(0, 5)).slice(1);
+  };
 
   const agregarBloque = () => {
     setBloques([
@@ -187,7 +231,7 @@ export default function ClaseProgramadaForm() {
         if (error.status === 409) {
           showError('Conflicto de horario');
         } else if (error.status === 400) {
-          showError(error.message || 'Docente o aula no disponible');
+          showError('El docente no está disponible en ese horario');
         } else {
           showError('Error al guardar la clase programada');
         }
@@ -218,7 +262,7 @@ export default function ClaseProgramadaForm() {
         if (error.status === 409) {
           showError(`Bloque ${i + 1}: Conflicto de horario`);
         } else if (error.status === 400) {
-          showError(error.message || `Bloque ${i + 1}: Docente o aula no disponible`);
+          showError(`Bloque ${i + 1}: El docente no está disponible en ese horario`);
         } else {
           showError(`Bloque ${i + 1}: Error al guardar la clase programada`);
         }
@@ -257,7 +301,16 @@ export default function ClaseProgramadaForm() {
             </select>
           </div>
 
-          {bloques.map((bloque, index) => (
+          {bloques.map((bloque, index) => {
+            let horasInicio = obtenerHorasInicio(bloque.dia);
+            let horasFin = obtenerHorasFin(bloque.dia, bloque.hora_inicio);
+            if (bloque.hora_inicio && !horasInicio.includes(bloque.hora_inicio)) {
+              horasInicio = [...horasInicio, bloque.hora_inicio];
+            }
+            if (bloque.hora_fin && !horasFin.includes(bloque.hora_fin)) {
+              horasFin = [...horasFin, bloque.hora_fin];
+            }
+            return (
             <div key={index} className="bg-gray-50 p-4 rounded-lg shadow space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
@@ -327,29 +380,41 @@ export default function ClaseProgramadaForm() {
                   <label className="block text-sm font-medium text-gray-700">
                     Hora inicio
                   </label>
-                  <input
-                    type="time"
+                  <select
                     value={bloque.hora_inicio}
                     onChange={(e) =>
                       actualizarBloque(index, 'hora_inicio', e.target.value)
                     }
                     className="w-full mt-1 px-4 py-2 border rounded-lg"
                     required
-                  />
+                  >
+                    <option value="">Selecciona una hora</option>
+                    {horasInicio.map((h) => (
+                      <option key={h} value={h}>
+                        {h}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="flex-1">
                   <label className="block text-sm font-medium text-gray-700">
                     Hora fin
                   </label>
-                  <input
-                    type="time"
+                  <select
                     value={bloque.hora_fin}
                     onChange={(e) =>
                       actualizarBloque(index, 'hora_fin', e.target.value)
                     }
                     className="w-full mt-1 px-4 py-2 border rounded-lg"
                     required
-                  />
+                  >
+                    <option value="">Selecciona una hora</option>
+                    {horasFin.map((h) => (
+                      <option key={h} value={h}>
+                        {h}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
@@ -363,7 +428,8 @@ export default function ClaseProgramadaForm() {
                 </button>
               )}
             </div>
-          ))}
+            );
+          })}
 
           {!isEdit && (
             <button

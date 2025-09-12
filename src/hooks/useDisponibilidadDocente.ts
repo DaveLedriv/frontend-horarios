@@ -15,7 +15,7 @@ export const useDisponibilidadDocente = (docenteId: string | null) => {
     const fetchDisponibilidad = async () => {
       try {
         setLoading(true);
-        const res = await api.get(`/docentes/${docenteId}/disponibilidad`);
+        const res = await api.get(`/disponibilidad/docente/${docenteId}`);
         setDisponibilidad(res.data.disponibles || []);
       } catch (err) {
         console.error('Error al cargar disponibilidad:', err);
