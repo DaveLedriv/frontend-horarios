@@ -95,7 +95,7 @@ export default function AulasDisponibles() {
                   <td className="border px-4 py-2 text-center">
                     <Link
                       to={`/horarios/aula/${a.id}`}
-                      className="text-blue-600 hover:underline"
+                      className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
                     >
                       Ver horario
                     </Link>
