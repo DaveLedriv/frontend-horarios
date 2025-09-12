@@ -23,7 +23,18 @@ export default function HorariosPorDocente() {
     if (docenteId) {
       api
         .get<HorarioDocenteResponse>(`/horarios/docente/${docenteId}`)
-        .then((res) => setClases(res.data.clases))
+        .then((res) => {
+          const valid = res.data.clases.filter(
+            (c) => c.hora_inicio && c.hora_fin && c.dia,
+          );
+          if (valid.length !== res.data.clases.length) {
+            console.warn('Datos incompletos en la respuesta de horarios', res.data.clases);
+            window.alert(
+              'La API devolvió datos incompletos para algunas clases. Se omitieron entradas inválidas.',
+            );
+          }
+          setClases(valid);
+        })
         .catch((err) => {
           console.error('Error al cargar horarios:', err);
           setClases([]);
@@ -52,8 +63,12 @@ export default function HorariosPorDocente() {
   const clasesGrid = useMemo(() => {
     const map: Record<string, { clase: ClaseProgramada; rowSpan: number } | null> = {};
     clases.forEach((c) => {
-      const start = parseInt(c.hora_inicio.slice(0, 2), 10);
-      const end = parseInt(c.hora_fin.slice(0, 2), 10);
+      const startStr = c.hora_inicio?.slice(0, 2);
+      const endStr = c.hora_fin?.slice(0, 2);
+      if (!c.dia || !startStr || !endStr) return;
+      const start = parseInt(startStr, 10);
+      const end = parseInt(endStr, 10);
+      if (Number.isNaN(start) || Number.isNaN(end) || end <= start) return;
       const rowSpan = end - start;
       const startKey = `${c.dia}-${c.hora_inicio}`;
       map[startKey] = { clase: c, rowSpan };
