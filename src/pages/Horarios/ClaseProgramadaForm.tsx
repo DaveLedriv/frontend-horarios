@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../lib/api';
@@ -36,6 +36,8 @@ export default function ClaseProgramadaForm() {
     hora_fin: '',
   });
 
+  const [conflict, setConflict] = useState<string | null>(null);
+
   useEffect(() => {
     if (isEdit && id) {
       api
@@ -64,8 +66,68 @@ export default function ClaseProgramadaForm() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const checkConflicts = useCallback(async (): Promise<string | null> => {
+    if (
+      !form.docente_id ||
+      !form.aula_id ||
+      !form.dia ||
+      !form.hora_inicio ||
+      !form.hora_fin
+    ) {
+      return null;
+    }
+    try {
+      const [docRes, aulaRes] = await Promise.all([
+        api.get(`/horarios/docente/${form.docente_id}`),
+        api.get(`/horarios/aula/${form.aula_id}`),
+      ]);
+
+      const hasConflict = (
+        clases: ClaseProgramada[],
+        tipo: 'docente' | 'aula'
+      ): string | null => {
+        const conflictClass = clases.find((c) => {
+          if (isEdit && id && c.id === Number(id)) return false;
+          return (
+            c.dia === form.dia &&
+            !(form.hora_fin <= c.hora_inicio || form.hora_inicio >= c.hora_fin)
+          );
+        });
+        if (conflictClass) {
+          const msgBase =
+            tipo === 'docente'
+              ? 'El docente ya tiene clase'
+              : 'El aula está ocupada';
+          return `${msgBase} el ${conflictClass.dia} de ${conflictClass.hora_inicio.slice(
+            0,
+            5
+          )} a ${conflictClass.hora_fin.slice(0, 5)}`;
+        }
+        return null;
+      };
+
+      const docenteConflict = hasConflict(docRes.data, 'docente');
+      if (docenteConflict) return docenteConflict;
+      const aulaConflict = hasConflict(aulaRes.data, 'aula');
+      if (aulaConflict) return aulaConflict;
+      return null;
+    } catch (err) {
+      console.error('Error verificando conflictos', err);
+      return null;
+    }
+  }, [form, id, isEdit]);
+
+  useEffect(() => {
+    checkConflicts().then((msg) => setConflict(msg));
+  }, [checkConflicts]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const conflictMsg = await checkConflicts();
+    if (conflictMsg) {
+      showError(conflictMsg);
+      return;
+    }
     try {
       if (isEdit && id) {
         await api.put(`/clases-programadas/${id}`, {
@@ -208,6 +270,10 @@ export default function ClaseProgramadaForm() {
               />
             </div>
           </div>
+
+          {conflict && (
+            <p className="text-red-600 text-sm text-center">{conflict}</p>
+          )}
 
           <button
             type="submit"
