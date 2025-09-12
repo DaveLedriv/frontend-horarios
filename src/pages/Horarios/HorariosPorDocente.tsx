@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../lib/api';
 import { ClaseProgramada } from '../../types/ClaseProgramada';
 import { useDocentes } from '../../hooks/useDocentes';
+import HorarioGrid from '../../components/Horarios/HorarioGrid';
 
 export default function HorariosPorDocente() {
   const { docenteId } = useParams();
@@ -42,6 +43,22 @@ export default function HorariosPorDocente() {
     }
   };
 
+  const clasesGrid = useMemo(() => {
+    const map: Record<string, { clase: ClaseProgramada; rowSpan: number } | null> = {};
+    clases.forEach((c) => {
+      const start = parseInt(c.hora_inicio.slice(0, 2), 10);
+      const end = parseInt(c.hora_fin.slice(0, 2), 10);
+      const rowSpan = end - start;
+      const startKey = `${c.dia}-${c.hora_inicio}`;
+      map[startKey] = { clase: c, rowSpan };
+      for (let h = start + 1; h < end; h++) {
+        const fillerKey = `${c.dia}-${h.toString().padStart(2, '0')}:00:00`;
+        map[fillerKey] = null;
+      }
+    });
+    return map;
+  }, [clases]);
+
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto">
@@ -57,28 +74,7 @@ export default function HorariosPorDocente() {
           </button>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full bg-white">
-            <thead>
-              <tr>
-                <th className="px-4 py-2 border">Día</th>
-                <th className="px-4 py-2 border">Hora inicio</th>
-                <th className="px-4 py-2 border">Hora fin</th>
-                <th className="px-4 py-2 border">Materia</th>
-                <th className="px-4 py-2 border">Aula</th>
-              </tr>
-            </thead>
-            <tbody>
-              {clases.map((c) => (
-                <tr key={c.id}>
-                  <td className="border px-4 py-2">{c.dia}</td>
-                  <td className="border px-4 py-2">{c.hora_inicio}</td>
-                  <td className="border px-4 py-2">{c.hora_fin}</td>
-                  <td className="border px-4 py-2">{c.asignacion.materia.nombre}</td>
-                  <td className="border px-4 py-2">{c.aula.nombre}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <HorarioGrid clases={clasesGrid} />
         </div>
       </div>
     </DashboardLayout>
