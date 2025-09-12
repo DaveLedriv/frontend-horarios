@@ -9,7 +9,6 @@ import { useToast } from '../../hooks/useToast';
 import { ClaseProgramada } from '../../types/ClaseProgramada';
 
 interface FormState {
-  docente_id: string;
   materia_id: string;
   aula_id: string;
   dia: string;
@@ -29,9 +28,9 @@ export default function ClaseProgramadaForm() {
 
   const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
+  const [docenteId, setDocenteId] = useState('');
   const [bloques, setBloques] = useState<FormState[]>([
     {
-      docente_id: '',
       materia_id: '',
       aula_id: '',
       dia: '',
@@ -44,7 +43,6 @@ export default function ClaseProgramadaForm() {
     setBloques([
       ...bloques,
       {
-        docente_id: '',
         materia_id: '',
         aula_id: '',
         dia: '',
@@ -76,9 +74,9 @@ export default function ClaseProgramadaForm() {
         .get(`/clases-programadas/${id}`)
         .then((res) => {
           const c: ClaseProgramada = res.data;
+          setDocenteId(String(c.asignacion.docente.id));
           setBloques([
             {
-              docente_id: String(c.asignacion.docente.id),
               materia_id: String(c.asignacion.materia.id),
               aula_id: String(c.aula.id),
               dia: c.dia,
@@ -97,7 +95,7 @@ export default function ClaseProgramadaForm() {
     bloque: FormState
   ): Promise<string | null> => {
     if (
-      !bloque.docente_id ||
+      !docenteId ||
       !bloque.aula_id ||
       !bloque.dia ||
       !bloque.hora_inicio ||
@@ -108,7 +106,7 @@ export default function ClaseProgramadaForm() {
     try {
       const [docRes, aulaRes] = await Promise.all([
         api.get<{ clases: ClaseProgramada[] }>(
-          `/horarios/docente/${bloque.docente_id}`
+          `/horarios/docente/${docenteId}`
         ),
         api.get<{ clases: ClaseProgramada[] }>(
           `/horarios/aula/${bloque.aula_id}`
@@ -166,7 +164,7 @@ export default function ClaseProgramadaForm() {
       }
       try {
         await api.put(`/clases-programadas/${id}`, {
-          docente_id: Number(bloque.docente_id),
+          docente_id: Number(docenteId),
           materia_id: Number(bloque.materia_id),
           aula_id: Number(bloque.aula_id),
           dia: bloque.dia,
@@ -198,7 +196,7 @@ export default function ClaseProgramadaForm() {
       }
       try {
         await api.post('/clases-programadas', {
-          docente_id: Number(b.docente_id),
+          docente_id: Number(docenteId),
           materia_id: Number(b.materia_id),
           aula_id: Number(b.aula_id),
           dia: b.dia,
@@ -230,29 +228,27 @@ export default function ClaseProgramadaForm() {
           {isEdit ? 'Editar' : 'Crear'} clase programada
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Docente
+            </label>
+            <select
+              value={docenteId}
+              onChange={(e) => setDocenteId(e.target.value)}
+              className="w-full mt-1 px-4 py-2 border rounded-lg"
+              required
+            >
+              <option value="">Selecciona un docente</option>
+              {docentes.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {bloques.map((bloque, index) => (
             <div key={index} className="bg-gray-50 p-4 rounded-lg shadow space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Docente
-                </label>
-                <select
-                  value={bloque.docente_id}
-                  onChange={(e) =>
-                    actualizarBloque(index, 'docente_id', e.target.value)
-                  }
-                  className="w-full mt-1 px-4 py-2 border rounded-lg"
-                  required
-                >
-                  <option value="">Selecciona un docente</option>
-                  {docentes.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.nombre}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Materia
