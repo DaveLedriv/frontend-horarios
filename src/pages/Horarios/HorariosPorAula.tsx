@@ -17,7 +17,18 @@ export default function HorariosPorAula() {
     if (aulaId) {
       api
         .get(`/horarios/aula/${aulaId}`)
-        .then((res) => setClases(res.data))
+        .then((res) => {
+          const data = res.data as ClaseProgramada[];
+          const allHaveRequired = data.every(
+            (c) => c.asignacion && c.aula
+          );
+          if (!allHaveRequired) {
+            console.warn(
+              'La respuesta de horarios no incluye asignacion o aula en todas las clases'
+            );
+          }
+          setClases(data);
+        })
         .catch((err) => {
           console.error('Error al cargar horarios:', err);
           setClases([]);

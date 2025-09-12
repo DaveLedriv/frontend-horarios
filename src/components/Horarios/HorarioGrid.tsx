@@ -41,16 +41,28 @@ export default function HorarioGrid({ clases }: HorarioGridProps) {
               if (cell === null) {
                 return null;
               }
+              const materiaNombre =
+                cell.clase.asignacion?.materia?.nombre ?? 'Sin materia';
+              const aula = cell.clase.aula;
+              if (!cell.clase.asignacion || !aula) {
+                return (
+                  <td
+                    key={day}
+                    className="border px-4 py-2 text-center bg-blue-100"
+                    rowSpan={cell.rowSpan}
+                  >
+                    Horario no disponible
+                  </td>
+                );
+              }
               return (
                 <td
                   key={day}
                   className="border px-4 py-2 text-center bg-blue-100"
                   rowSpan={cell.rowSpan}
                 >
-                  <div className="font-semibold">
-                    {cell.clase.asignacion.materia.nombre}
-                  </div>
-                  <div className="text-sm">{cell.clase.aula.nombre}</div>
+                  <div className="font-semibold">{materiaNombre}</div>
+                  <div className="text-sm">{aula.nombre}</div>
                 </td>
               );
             })}
