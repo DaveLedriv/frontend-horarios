@@ -82,11 +82,17 @@ export default function DocentesList() {
                     >
                       Editar
                     </Link>
-                  <Link
+                    <Link
                       to={`/asignaciones/docente/${d.id}`}
                       className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition text-sm"
                     >
                       Ver asignaciones
+                    </Link>
+                    <Link
+                      to={`/horarios/docente/${d.id}`}
+                      className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition text-sm"
+                    >
+                      Ver horario
                     </Link>
                     <button
                       onClick={() => handleEliminar(d.id)}
