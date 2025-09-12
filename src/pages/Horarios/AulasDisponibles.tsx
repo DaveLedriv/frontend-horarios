@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../lib/api';
 import { Aula } from '../../types/Aula';
@@ -82,6 +83,7 @@ export default function AulasDisponibles() {
                 <th className="px-4 py-2 border">Aula</th>
                 <th className="px-4 py-2 border">Ubicación</th>
                 <th className="px-4 py-2 border">Capacidad</th>
+                <th className="px-4 py-2 border">Horario</th>
               </tr>
             </thead>
             <tbody>
@@ -90,6 +92,14 @@ export default function AulasDisponibles() {
                   <td className="border px-4 py-2">{a.nombre}</td>
                   <td className="border px-4 py-2">{a.ubicacion}</td>
                   <td className="border px-4 py-2">{a.capacidad}</td>
+                  <td className="border px-4 py-2 text-center">
+                    <Link
+                      to={`/horarios/aula/${a.id}`}
+                      className="text-blue-600 hover:underline"
+                    >
+                      Ver horario
+                    </Link>
+                  </td>
                 </tr>
               ))}
             </tbody>
