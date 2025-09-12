@@ -105,8 +105,12 @@ export default function ClaseProgramadaForm() {
     }
     try {
       const [docRes, aulaRes] = await Promise.all([
-        api.get(`/horarios/docente/${bloque.docente_id}`),
-        api.get(`/horarios/aula/${bloque.aula_id}`),
+        api.get<{ clases: ClaseProgramada[] }>(
+          `/horarios/docente/${bloque.docente_id}`
+        ),
+        api.get<{ clases: ClaseProgramada[] }>(
+          `/horarios/aula/${bloque.aula_id}`
+        ),
       ]);
 
       const hasConflict = (
@@ -136,10 +140,8 @@ export default function ClaseProgramadaForm() {
         return null;
       };
 
-      const docenteClases: ClaseProgramada[] =
-        docRes.data.clases || docRes.data;
-      const aulaClases: ClaseProgramada[] =
-        aulaRes.data.clases || aulaRes.data;
+      const docenteClases: ClaseProgramada[] = docRes.data.clases;
+      const aulaClases: ClaseProgramada[] = aulaRes.data.clases;
       const docenteConflict = hasConflict(docenteClases, 'docente');
       if (docenteConflict) return docenteConflict;
       const aulaConflict = hasConflict(aulaClases, 'aula');

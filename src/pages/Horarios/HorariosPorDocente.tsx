@@ -6,6 +6,11 @@ import { ClaseProgramada } from '../../types/ClaseProgramada';
 import { useDocentes } from '../../hooks/useDocentes';
 import HorarioGrid from '../../components/Horarios/HorarioGrid';
 
+interface HorarioDocenteResponse {
+  docente_id: number;
+  clases: ClaseProgramada[];
+}
+
 export default function HorariosPorDocente() {
   const { docenteId } = useParams();
   const { docentes } = useDocentes();
@@ -16,8 +21,8 @@ export default function HorariosPorDocente() {
   useEffect(() => {
     if (docenteId) {
       api
-        .get(`/horarios/docente/${docenteId}`)
-        .then((res) => setClases(res.data))
+        .get<HorarioDocenteResponse>(`/horarios/docente/${docenteId}`)
+        .then((res) => setClases(res.data.clases))
         .catch((err) => {
           console.error('Error al cargar horarios:', err);
           setClases([]);
