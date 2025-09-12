@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../lib/api';
@@ -27,16 +27,46 @@ export default function ClaseProgramadaForm() {
   const { aulas } = useAulas();
   const { showSuccess, showError } = useToast();
 
-  const [form, setForm] = useState<FormState>({
-    docente_id: '',
-    materia_id: '',
-    aula_id: '',
-    dia: '',
-    hora_inicio: '',
-    hora_fin: '',
-  });
+  const [bloques, setBloques] = useState<FormState[]>([
+    {
+      docente_id: '',
+      materia_id: '',
+      aula_id: '',
+      dia: '',
+      hora_inicio: '',
+      hora_fin: '',
+    },
+  ]);
 
-  const [conflict, setConflict] = useState<string | null>(null);
+  const agregarBloque = () => {
+    setBloques([
+      ...bloques,
+      {
+        docente_id: '',
+        materia_id: '',
+        aula_id: '',
+        dia: '',
+        hora_inicio: '',
+        hora_fin: '',
+      },
+    ]);
+  };
+
+  const actualizarBloque = (
+    index: number,
+    campo: keyof FormState,
+    valor: string
+  ) => {
+    setBloques((prev) => {
+      const nuevos = [...prev];
+      nuevos[index] = { ...nuevos[index], [campo]: valor };
+      return nuevos;
+    });
+  };
+
+  const eliminarBloque = (index: number) => {
+    setBloques((prev) => prev.filter((_, i) => i !== index));
+  };
 
   useEffect(() => {
     if (isEdit && id) {
@@ -44,14 +74,16 @@ export default function ClaseProgramadaForm() {
         .get(`/clases-programadas/${id}`)
         .then((res) => {
           const c: ClaseProgramada = res.data;
-          setForm({
-            docente_id: String(c.asignacion.docente.id),
-            materia_id: String(c.asignacion.materia.id),
-            aula_id: String(c.aula.id),
-            dia: c.dia,
-            hora_inicio: c.hora_inicio,
-            hora_fin: c.hora_fin,
-          });
+          setBloques([
+            {
+              docente_id: String(c.asignacion.docente.id),
+              materia_id: String(c.asignacion.materia.id),
+              aula_id: String(c.aula.id),
+              dia: c.dia,
+              hora_inicio: c.hora_inicio,
+              hora_fin: c.hora_fin,
+            },
+          ]);
         })
         .catch(() => {
           showError('No se pudo cargar la clase programada');
@@ -59,27 +91,22 @@ export default function ClaseProgramadaForm() {
     }
   }, [id, isEdit, showError]);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const checkConflicts = useCallback(async (): Promise<string | null> => {
+  const checkBlockConflicts = async (
+    bloque: FormState
+  ): Promise<string | null> => {
     if (
-      !form.docente_id ||
-      !form.aula_id ||
-      !form.dia ||
-      !form.hora_inicio ||
-      !form.hora_fin
+      !bloque.docente_id ||
+      !bloque.aula_id ||
+      !bloque.dia ||
+      !bloque.hora_inicio ||
+      !bloque.hora_fin
     ) {
       return null;
     }
     try {
       const [docRes, aulaRes] = await Promise.all([
-        api.get(`/horarios/docente/${form.docente_id}`),
-        api.get(`/horarios/aula/${form.aula_id}`),
+        api.get(`/horarios/docente/${bloque.docente_id}`),
+        api.get(`/horarios/aula/${bloque.aula_id}`),
       ]);
 
       const hasConflict = (
@@ -89,8 +116,11 @@ export default function ClaseProgramadaForm() {
         const conflictClass = clases.find((c) => {
           if (isEdit && id && c.id === Number(id)) return false;
           return (
-            c.dia === form.dia &&
-            !(form.hora_fin <= c.hora_inicio || form.hora_inicio >= c.hora_fin)
+            c.dia === bloque.dia &&
+            !(
+              bloque.hora_fin <= c.hora_inicio ||
+              bloque.hora_inicio >= c.hora_fin
+            )
           );
         });
         if (conflictClass) {
@@ -106,173 +136,228 @@ export default function ClaseProgramadaForm() {
         return null;
       };
 
-      const docenteConflict = hasConflict(docRes.data, 'docente');
+      const docenteClases: ClaseProgramada[] =
+        docRes.data.clases || docRes.data;
+      const aulaClases: ClaseProgramada[] =
+        aulaRes.data.clases || aulaRes.data;
+      const docenteConflict = hasConflict(docenteClases, 'docente');
       if (docenteConflict) return docenteConflict;
-      const aulaConflict = hasConflict(aulaRes.data, 'aula');
+      const aulaConflict = hasConflict(aulaClases, 'aula');
       if (aulaConflict) return aulaConflict;
       return null;
     } catch (err) {
       console.error('Error verificando conflictos', err);
       return null;
     }
-  }, [form, id, isEdit]);
-
-  useEffect(() => {
-    checkConflicts().then((msg) => setConflict(msg));
-  }, [checkConflicts]);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const conflictMsg = await checkConflicts();
-    if (conflictMsg) {
-      showError(conflictMsg);
-      return;
-    }
-    try {
-      if (isEdit && id) {
+    if (isEdit && id) {
+      const bloque = bloques[0];
+      const conflictMsg = await checkBlockConflicts(bloque);
+      if (conflictMsg) {
+        showError(conflictMsg);
+        return;
+      }
+      try {
         await api.put(`/clases-programadas/${id}`, {
-          docente_id: Number(form.docente_id),
-          materia_id: Number(form.materia_id),
-          aula_id: Number(form.aula_id),
-          dia: form.dia,
-          hora_inicio: form.hora_inicio,
-          hora_fin: form.hora_fin,
+          docente_id: Number(bloque.docente_id),
+          materia_id: Number(bloque.materia_id),
+          aula_id: Number(bloque.aula_id),
+          dia: bloque.dia,
+          hora_inicio: bloque.hora_inicio,
+          hora_fin: bloque.hora_fin,
         });
         showSuccess('Clase programada actualizada');
-      } else {
+        navigate(-1);
+      } catch (error: any) {
+        if (error.status === 409) {
+          showError('Conflicto de horario');
+        } else if (error.status === 400) {
+          showError(error.message || 'Docente o aula no disponible');
+        } else {
+          showError('Error al guardar la clase programada');
+        }
+      }
+      return;
+    }
+
+    let huboError = false;
+    for (let i = 0; i < bloques.length; i++) {
+      const b = bloques[i];
+      const conflictMsg = await checkBlockConflicts(b);
+      if (conflictMsg) {
+        showError(`Bloque ${i + 1}: ${conflictMsg}`);
+        huboError = true;
+        continue;
+      }
+      try {
         await api.post('/clases-programadas', {
-          docente_id: Number(form.docente_id),
-          materia_id: Number(form.materia_id),
-          aula_id: Number(form.aula_id),
-          dia: form.dia,
-          hora_inicio: form.hora_inicio,
-          hora_fin: form.hora_fin,
+          docente_id: Number(b.docente_id),
+          materia_id: Number(b.materia_id),
+          aula_id: Number(b.aula_id),
+          dia: b.dia,
+          hora_inicio: b.hora_inicio,
+          hora_fin: b.hora_fin,
         });
-        showSuccess('Clase programada creada');
+      } catch (error: any) {
+        huboError = true;
+        if (error.status === 409) {
+          showError(`Bloque ${i + 1}: Conflicto de horario`);
+        } else if (error.status === 400) {
+          showError(error.message || `Bloque ${i + 1}: Docente o aula no disponible`);
+        } else {
+          showError(`Bloque ${i + 1}: Error al guardar la clase programada`);
+        }
       }
+    }
+
+    if (!huboError) {
+      showSuccess('Clases programadas creadas');
       navigate(-1);
-    } catch (error: any) {
-      if (error.status === 409) {
-        showError('Conflicto de horario');
-      } else if (error.status === 400) {
-        showError(error.message || 'Docente o aula no disponible');
-      } else {
-        showError('Error al guardar la clase programada');
-      }
     }
   };
 
   return (
     <DashboardLayout>
-      <div className="max-w-xl mx-auto bg-white p-6 rounded-xl shadow-md">
+      <div className="max-w-2xl mx-auto bg-white p-6 rounded-xl shadow-md">
         <h2 className="text-2xl font-bold mb-6 text-center">
           {isEdit ? 'Editar' : 'Crear'} clase programada
         </h2>
-        <form onSubmit={handleSubmit} className="grid gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Docente
-            </label>
-            <select
-              name="docente_id"
-              value={form.docente_id}
-              onChange={handleChange}
-              className="w-full mt-1 px-4 py-2 border rounded-lg"
-              required
-            >
-              <option value="">Selecciona un docente</option>
-              {docentes.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {bloques.map((bloque, index) => (
+            <div key={index} className="bg-gray-50 p-4 rounded-lg shadow space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Docente
+                </label>
+                <select
+                  value={bloque.docente_id}
+                  onChange={(e) =>
+                    actualizarBloque(index, 'docente_id', e.target.value)
+                  }
+                  className="w-full mt-1 px-4 py-2 border rounded-lg"
+                  required
+                >
+                  <option value="">Selecciona un docente</option>
+                  {docentes.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.nombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Materia
-            </label>
-            <select
-              name="materia_id"
-              value={form.materia_id}
-              onChange={handleChange}
-              className="w-full mt-1 px-4 py-2 border rounded-lg"
-              required
-            >
-              <option value="">Selecciona una materia</option>
-              {materias.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Materia
+                </label>
+                <select
+                  value={bloque.materia_id}
+                  onChange={(e) =>
+                    actualizarBloque(index, 'materia_id', e.target.value)
+                  }
+                  className="w-full mt-1 px-4 py-2 border rounded-lg"
+                  required
+                >
+                  <option value="">Selecciona una materia</option>
+                  {materias.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.nombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Aula
-            </label>
-            <select
-              name="aula_id"
-              value={form.aula_id}
-              onChange={handleChange}
-              className="w-full mt-1 px-4 py-2 border rounded-lg"
-              required
-            >
-              <option value="">Selecciona un aula</option>
-              {aulas.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Aula
+                </label>
+                <select
+                  value={bloque.aula_id}
+                  onChange={(e) =>
+                    actualizarBloque(index, 'aula_id', e.target.value)
+                  }
+                  className="w-full mt-1 px-4 py-2 border rounded-lg"
+                  required
+                >
+                  <option value="">Selecciona un aula</option>
+                  {aulas.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.nombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Día</label>
-            <input
-              type="text"
-              name="dia"
-              value={form.dia}
-              onChange={handleChange}
-              className="w-full mt-1 px-4 py-2 border rounded-lg"
-              placeholder="Lunes"
-              required
-            />
-          </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Día
+                </label>
+                <input
+                  type="text"
+                  value={bloque.dia}
+                  onChange={(e) =>
+                    actualizarBloque(index, 'dia', e.target.value)
+                  }
+                  className="w-full mt-1 px-4 py-2 border rounded-lg"
+                  placeholder="Lunes"
+                  required
+                />
+              </div>
 
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700">
-                Hora inicio
-              </label>
-              <input
-                type="time"
-                name="hora_inicio"
-                value={form.hora_inicio}
-                onChange={handleChange}
-                className="w-full mt-1 px-4 py-2 border rounded-lg"
-                required
-              />
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Hora inicio
+                  </label>
+                  <input
+                    type="time"
+                    value={bloque.hora_inicio}
+                    onChange={(e) =>
+                      actualizarBloque(index, 'hora_inicio', e.target.value)
+                    }
+                    className="w-full mt-1 px-4 py-2 border rounded-lg"
+                    required
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Hora fin
+                  </label>
+                  <input
+                    type="time"
+                    value={bloque.hora_fin}
+                    onChange={(e) =>
+                      actualizarBloque(index, 'hora_fin', e.target.value)
+                    }
+                    className="w-full mt-1 px-4 py-2 border rounded-lg"
+                    required
+                  />
+                </div>
+              </div>
+
+              {!isEdit && bloques.length > 1 && (
+                <button
+                  type="button"
+                  className="text-red-600 text-sm"
+                  onClick={() => eliminarBloque(index)}
+                >
+                  Eliminar bloque
+                </button>
+              )}
             </div>
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700">
-                Hora fin
-              </label>
-              <input
-                type="time"
-                name="hora_fin"
-                value={form.hora_fin}
-                onChange={handleChange}
-                className="w-full mt-1 px-4 py-2 border rounded-lg"
-                required
-              />
-            </div>
-          </div>
+          ))}
 
-          {conflict && (
-            <p className="text-red-600 text-sm text-center">{conflict}</p>
+          {!isEdit && (
+            <button
+              type="button"
+              onClick={agregarBloque}
+              className="bg-gray-200 hover:bg-gray-300 text-sm px-4 py-2 rounded"
+            >
+              + Agregar bloque
+            </button>
           )}
 
           <button
