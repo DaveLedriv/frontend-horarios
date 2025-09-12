@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../lib/api';
 import { ClaseProgramada } from '../../types/ClaseProgramada';
@@ -15,6 +15,7 @@ export default function HorariosPorDocente() {
   const { docenteId } = useParams();
   const { docentes } = useDocentes();
   const [clases, setClases] = useState<ClaseProgramada[]>([]);
+  const navigate = useNavigate();
 
   const docente = docentes.find((d) => String(d.id) === docenteId);
 
@@ -71,12 +72,20 @@ export default function HorariosPorDocente() {
           <h2 className="text-2xl font-bold">
             Horario de {docente ? docente.nombre : 'Docente'}
           </h2>
-          <button
-            onClick={handleExport}
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-          >
-            Exportar Excel
-          </button>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => navigate('/horarios/docentes')}
+              className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded"
+            >
+              Regresar
+            </button>
+            <button
+              onClick={handleExport}
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+            >
+              Exportar Excel
+            </button>
+          </div>
         </div>
         <div className="overflow-x-auto">
           <HorarioGrid clases={clasesGrid} />
