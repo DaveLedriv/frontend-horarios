@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../lib/api';
 import { ClaseProgramada } from '../../types/ClaseProgramada';
+import { HorarioAulaResponse } from '../../types/HorarioAulaResponse';
 import { useAulas } from '../../hooks/useAulas';
 import HorarioGrid from '../../components/Horarios/HorarioGrid';
 
@@ -16,9 +17,14 @@ export default function HorariosPorAula() {
   useEffect(() => {
     if (aulaId) {
       api
-        .get(`/horarios/aula/${aulaId}`)
+        .get<HorarioAulaResponse>(`/horarios/aula/${aulaId}`)
         .then((res) => {
-          const data = res.data as ClaseProgramada[];
+          const data = res.data.clases;
+          if (!Array.isArray(data)) {
+            console.warn('La respuesta de horarios no incluye el arreglo de clases');
+            setClases([]);
+            return;
+          }
           const allHaveRequired = data.every(
             (c) => c.asignacion && c.aula
           );
