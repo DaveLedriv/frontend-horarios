@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../lib/api';
 import { ClaseProgramada } from '../../types/ClaseProgramada';
-import { HorarioAulaResponse } from '../../types/HorarioAulaResponse';
 import { useAulas } from '../../hooks/useAulas';
 import HorarioGrid from '../../components/Horarios/HorarioGrid';
 
@@ -18,23 +17,26 @@ export default function HorariosPorAula() {
   useEffect(() => {
     if (aulaId) {
       api
-        .get<HorarioAulaResponse>(`/horarios/aula/${aulaId}`)
+        .get<ClaseProgramada[]>(`/horarios/aula/${aulaId}`)
         .then((res) => {
-          const data = res.data.clases;
-          if (!Array.isArray(data)) {
-            console.warn('La respuesta de horarios no incluye el arreglo de clases');
-            setClases([]);
-            return;
-          }
-          const allHaveRequired = data.every(
-            (c) => c.asignacion && c.aula
+          const valid = res.data.filter(
+            (c) =>
+              c.hora_inicio &&
+              c.hora_fin &&
+              c.dia &&
+              c.asignacion &&
+              c.aula,
           );
-          if (!allHaveRequired) {
+          if (valid.length !== res.data.length) {
             console.warn(
-              'La respuesta de horarios no incluye asignacion o aula en todas las clases'
+              'Datos incompletos en la respuesta de horarios',
+              res.data,
+            );
+            window.alert(
+              'La API devolvió datos incompletos para algunas clases. Se omitieron entradas inválidas.',
             );
           }
-          setClases(data);
+          setClases(valid);
         })
         .catch((err) => {
           console.error('Error al cargar horarios:', err);
