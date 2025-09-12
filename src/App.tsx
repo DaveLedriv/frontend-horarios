@@ -28,6 +28,7 @@ import HorariosPorDocente from './pages/Horarios/HorariosPorDocente';
 import HorariosPorAula from './pages/Horarios/HorariosPorAula';
 import AulasDisponibles from './pages/Horarios/AulasDisponibles';
 import ListaAulas from './pages/Horarios/ListaAulas';
+import ListaDocentes from './pages/Horarios/ListaDocentes';
 
 
 function App() {
@@ -64,6 +65,7 @@ function App() {
           <Route path="/horarios/docente/:docenteId" element={<HorariosPorDocente />} />
           <Route path="/horarios/aula/:aulaId" element={<HorariosPorAula />} />
           <Route path="/horarios/aulas-disponibles" element={<AulasDisponibles />} />
+          <Route path="/horarios/docentes" element={<ListaDocentes />} />
           <Route path="/horarios" element={<ListaAulas />} />
 
         </Route>
