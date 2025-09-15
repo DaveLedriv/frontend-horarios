@@ -10,9 +10,6 @@ import { useDisponibilidadDocente } from '../../hooks/useDisponibilidadDocente';
 import { ClaseProgramada } from '../../types/ClaseProgramada';
 import { checkBlockConflicts, FormState } from './checkBlockConflicts';
 
-const DEFAULT_TIME_RANGE_START = '07:00';
-const DEFAULT_TIME_RANGE_END = '21:30';
-
 const normalizeDay = (value: string) =>
   value
     ? value
@@ -56,15 +53,8 @@ const generarHoras = (inicio: string, fin: string) => {
   return times;
 };
 
-const DEFAULT_TIME_SLOTS = generarHoras(
-  DEFAULT_TIME_RANGE_START,
-  DEFAULT_TIME_RANGE_END
-);
-const DEFAULT_START_TIMES = DEFAULT_TIME_SLOTS.slice(0, -1);
-const DEFAULT_END_TIMES = DEFAULT_TIME_SLOTS.slice(1);
-
 const sortTimes = (times: string[]) =>
-  [...times].sort((a, b) => a.localeCompare(b));
+  Array.from(new Set(times)).sort((a, b) => a.localeCompare(b));
 
 function toAmPm(time: string): string {
   const [hourStr, minuteStr] = time.split(':');
@@ -101,17 +91,18 @@ export default function ClaseProgramadaForm() {
   ]);
 
   const obtenerHorasInicio = (dia: string) => {
-    if (!dia) return [];
+    if (!dia || !docenteId) return [];
     const normalizedSelectedDay = normalizeDay(dia);
-    return disponibilidadDocente
+    const horas = disponibilidadDocente
       .filter((d) => normalizeDay(d.dia) === normalizedSelectedDay)
       .flatMap((d) =>
         generarHoras(d.hora_inicio.slice(0, 5), d.hora_fin.slice(0, 5)).slice(0, -1)
       );
+    return sortTimes(horas);
   };
 
   const obtenerHorasFin = (dia: string, horaInicio: string) => {
-    if (!dia || !horaInicio) return [];
+    if (!dia || !horaInicio || !docenteId) return [];
     const normalizedSelectedDay = normalizeDay(dia);
     const bloque = disponibilidadDocente.find((d) => {
       if (normalizeDay(d.dia) !== normalizedSelectedDay) return false;
@@ -120,7 +111,8 @@ export default function ClaseProgramadaForm() {
       return horaInicio >= inicio && horaInicio < fin;
     });
     if (!bloque) return [];
-    return generarHoras(horaInicio, bloque.hora_fin.slice(0, 5)).slice(1);
+    const horas = generarHoras(horaInicio, bloque.hora_fin.slice(0, 5)).slice(1);
+    return sortTimes(horas);
   };
 
   const agregarBloque = () => {
@@ -136,20 +128,28 @@ export default function ClaseProgramadaForm() {
     ]);
   };
 
-  const actualizarBloque = (
-    index: number,
-    campo: keyof FormState,
-    valor: string
-  ) => {
+  const actualizarBloque = (index: number, cambios: Partial<FormState>) => {
     setBloques((prev) => {
       const nuevos = [...prev];
-      nuevos[index] = { ...nuevos[index], [campo]: valor };
+      nuevos[index] = { ...nuevos[index], ...cambios };
       return nuevos;
     });
   };
 
   const eliminarBloque = (index: number) => {
     setBloques((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleDocenteChange = (value: string) => {
+    setDocenteId(value);
+    setBloques((prev) =>
+      prev.map((bloque) => ({
+        ...bloque,
+        dia: '',
+        hora_inicio: '',
+        hora_fin: '',
+      }))
+    );
   };
 
   useEffect(() => {
@@ -266,7 +266,7 @@ export default function ClaseProgramadaForm() {
             </label>
             <select
               value={docenteId}
-              onChange={(e) => setDocenteId(e.target.value)}
+              onChange={(e) => handleDocenteChange(e.target.value)}
               className="w-full mt-1 px-4 py-2 border rounded-lg"
               required
             >
@@ -280,38 +280,14 @@ export default function ClaseProgramadaForm() {
           </div>
 
           {bloques.map((bloque, index) => {
-            let horasInicio = obtenerHorasInicio(bloque.dia);
-            let horasFin = obtenerHorasFin(bloque.dia, bloque.hora_inicio);
-
-            const shouldUseFallback = Boolean(
+            const horasInicio = obtenerHorasInicio(bloque.dia);
+            const horasFin = obtenerHorasFin(bloque.dia, bloque.hora_inicio);
+            const sinDisponibilidad = Boolean(
               docenteId &&
                 bloque.dia &&
                 !disponibilidadLoading &&
-                disponibilidadDocente.length === 0
+                horasInicio.length === 0
             );
-
-            if (!horasInicio.length && shouldUseFallback) {
-              horasInicio = [...DEFAULT_START_TIMES];
-            }
-
-            if (!horasFin.length && shouldUseFallback) {
-              const startBoundary = bloque.hora_inicio;
-              horasFin = startBoundary
-                ? DEFAULT_END_TIMES.filter((hora) => hora > startBoundary)
-                : [...DEFAULT_END_TIMES];
-            }
-
-            if (bloque.hora_inicio && !horasInicio.includes(bloque.hora_inicio)) {
-              horasInicio = sortTimes([...horasInicio, bloque.hora_inicio]);
-            } else {
-              horasInicio = sortTimes(horasInicio);
-            }
-
-            if (bloque.hora_fin && !horasFin.includes(bloque.hora_fin)) {
-              horasFin = sortTimes([...horasFin, bloque.hora_fin]);
-            } else {
-              horasFin = sortTimes(horasFin);
-            }
 
             return (
               <div key={index} className="bg-gray-50 p-4 rounded-lg shadow space-y-4">
@@ -322,7 +298,7 @@ export default function ClaseProgramadaForm() {
                   <select
                     value={bloque.materia_id}
                     onChange={(e) =>
-                      actualizarBloque(index, 'materia_id', e.target.value)
+                      actualizarBloque(index, { materia_id: e.target.value })
                     }
                     className="w-full mt-1 px-4 py-2 border rounded-lg"
                     required
@@ -343,7 +319,7 @@ export default function ClaseProgramadaForm() {
                   <select
                     value={bloque.aula_id}
                     onChange={(e) =>
-                      actualizarBloque(index, 'aula_id', e.target.value)
+                      actualizarBloque(index, { aula_id: e.target.value })
                     }
                     className="w-full mt-1 px-4 py-2 border rounded-lg"
                     required
@@ -364,7 +340,11 @@ export default function ClaseProgramadaForm() {
                   <select
                     value={bloque.dia}
                     onChange={(e) =>
-                      actualizarBloque(index, 'dia', e.target.value)
+                      actualizarBloque(index, {
+                        dia: e.target.value,
+                        hora_inicio: '',
+                        hora_fin: '',
+                      })
                     }
                     className="w-full mt-1 px-4 py-2 border rounded-lg"
                     required
@@ -386,9 +366,13 @@ export default function ClaseProgramadaForm() {
                     <select
                       value={bloque.hora_inicio}
                       onChange={(e) =>
-                        actualizarBloque(index, 'hora_inicio', e.target.value)
+                        actualizarBloque(index, {
+                          hora_inicio: e.target.value,
+                          hora_fin: '',
+                        })
                       }
                       className="w-full mt-1 px-4 py-2 border rounded-lg"
+                      disabled={!horasInicio.length}
                       required
                     >
                       <option value="">Selecciona una hora</option>
@@ -406,9 +390,10 @@ export default function ClaseProgramadaForm() {
                     <select
                       value={bloque.hora_fin}
                       onChange={(e) =>
-                        actualizarBloque(index, 'hora_fin', e.target.value)
+                        actualizarBloque(index, { hora_fin: e.target.value })
                       }
                       className="w-full mt-1 px-4 py-2 border rounded-lg"
+                      disabled={!horasFin.length}
                       required
                     >
                       <option value="">Selecciona una hora</option>
@@ -421,10 +406,9 @@ export default function ClaseProgramadaForm() {
                   </div>
                 </div>
 
-                {shouldUseFallback && (
-                  <p className="text-xs text-gray-500">
-                    El docente no tiene disponibilidad registrada; se muestran todos los
-                    horarios posibles.
+                {sinDisponibilidad && (
+                  <p className="text-xs text-red-600">
+                    El docente no tiene disponibilidad registrada para este día.
                   </p>
                 )}
 
