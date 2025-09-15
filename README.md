@@ -26,7 +26,20 @@ VITE_API_BASE_URL=http://localhost:8000
 2. Realiza operaciones CRUD básicas sobre los recursos disponibles.
 3. Crea una clase asegurando que los horarios no se empalmen.
 
+## Dashboard administrativo
+- La ruta protegida `/dashboard` muestra un resumen para administradores con indicadores clave (usuarios, docentes, reservas y ocupación).
+- El tablero incorpora tarjetas responsivas y visualizaciones interactivas (distribución de usuarios, horarios más solicitados y tendencia de reservas) construidas sobre `react-apexcharts`.
+- Los datos se obtienen desde `src/services/dashboardApi.ts`, que consume los endpoints REST:
+  - `GET /dashboard/stats`
+  - `GET /dashboard/user-distribution`
+  - `GET /dashboard/popular-times`
+  - `GET /dashboard/trends`
+- El botón **Actualizar datos** permite refrescar la información bajo demanda.
+
+## Pruebas
+- Ejecuta `npm run test` para correr la batería de pruebas unitarias (incluye servicios y componentes del dashboard).
+
 ## Notas
 - Accesibilidad: se anima a verificar contraste, navegación por teclado y uso de etiquetas semánticas.
-- Pruebas: actualmente no existen pruebas automatizadas; se recomienda añadirlas.
+- Pruebas: el proyecto cuenta con pruebas unitarias utilizando Vitest.
 - Semilla de datos: depende del backend; consulta su documentación si requiere datos iniciales.
