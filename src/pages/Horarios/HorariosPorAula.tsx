@@ -153,7 +153,13 @@ export default function HorariosPorAula() {
           </div>
         </div>
         <div className="overflow-x-auto">
-          <HorarioGrid clases={clasesGrid} />
+          {clases.length === 0 ? (
+            <div className="flex items-center justify-center py-12 text-center text-gray-500">
+              No hay clases programadas para este horario.
+            </div>
+          ) : (
+            <HorarioGrid clases={clasesGrid} />
+          )}
         </div>
       </div>
     </DashboardLayout>
