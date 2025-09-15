@@ -10,15 +10,18 @@
     "test": "vitest"
   },
   "dependencies": {
+    "apexcharts": "^5.3.5",
     "axios": "^1.6.8",
     "classnames": "^2.3.2",
     "react": "^18.2.0",
+    "react-apexcharts": "^1.7.0",
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^6.23.0",
     "zustand": "^4.5.2"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",
@@ -26,6 +29,7 @@
     "autoprefixer": "^10.4.17",
     "jsdom": "^26.1.0",
     "postcss": "^8.4.38",
+    "postcss-selector-parser": "^6.0.13",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.3.3",
     "vite": "^5.2.10",

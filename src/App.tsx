@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
+import Dashboard from './pages/dashboard/Dashboard';
 import PrivateRoute from './routes/PrivateRoute';
 import CrearMateria from './pages/Materias/CrearMateria';
 import ListaMaterias from './pages/Materias/ListaMaterias';
@@ -38,8 +38,11 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         
-        <Route element={<PrivateRoute />}>
+        <Route element={<PrivateRoute requiredRoles={["admin"]} />}>
           <Route path="/dashboard" element={<Dashboard />} />
+        </Route>
+
+        <Route element={<PrivateRoute />}>
           <Route path="/materias" element={<ListaMaterias />} />
           <Route path="/materias/crear" element={<CrearMateria />} />
           <Route path="/materias/editar/:id" element={<EditarMateria />} />
