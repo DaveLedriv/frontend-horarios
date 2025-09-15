@@ -1,6 +1,9 @@
 import api from '../../lib/api';
 import { ClaseProgramada } from '../../types/ClaseProgramada';
 
+export const DUPLICATE_CLASS_MESSAGE =
+  'Ya existe un horario para esta clase en el salón seleccionado';
+
 export interface FormState {
   materia_id: string;
   aula_id: string;
@@ -17,6 +20,7 @@ export async function checkBlockConflicts(
 ): Promise<string | null> {
   if (
     !docenteId ||
+    !bloque.materia_id ||
     !bloque.aula_id ||
     !bloque.dia ||
     !bloque.hora_inicio ||
@@ -25,6 +29,7 @@ export async function checkBlockConflicts(
     return null;
   }
   try {
+    const editingId = isEdit && id ? Number(id) : null;
     const [docRes, aulaRes] = await Promise.all([
       api.get<{ clases: ClaseProgramada[] }>(
         `/horarios/docente/${docenteId}`
@@ -39,7 +44,7 @@ export async function checkBlockConflicts(
       tipo: 'docente' | 'aula'
     ): string | null => {
       const conflictClass = clases.find((c) => {
-        if (isEdit && id && c.id === Number(id)) return false;
+        if (editingId && c.id === editingId) return false;
         return (
           c.dia === bloque.dia &&
           !(
@@ -63,6 +68,18 @@ export async function checkBlockConflicts(
 
     const docenteClases: ClaseProgramada[] = docRes.data.clases;
     const aulaClases: ClaseProgramada[] = aulaRes.data.clases;
+    const materiaId = Number.parseInt(bloque.materia_id, 10);
+
+    if (!Number.isNaN(materiaId)) {
+      const materiaConflict = aulaClases.find((c) => {
+        if (editingId && c.id === editingId) return false;
+        return c.asignacion?.materia?.id === materiaId;
+      });
+      if (materiaConflict) {
+        return DUPLICATE_CLASS_MESSAGE;
+      }
+    }
+
     const docenteConflict = hasConflict(docenteClases, 'docente');
     if (docenteConflict) return docenteConflict;
     const aulaConflict = hasConflict(aulaClases, 'aula');

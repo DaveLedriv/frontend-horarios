@@ -8,7 +8,11 @@ import { useAulas } from '../../hooks/useAulas';
 import { useToast } from '../../hooks/useToast';
 import { useDisponibilidadDocente } from '../../hooks/useDisponibilidadDocente';
 import { ClaseProgramada } from '../../types/ClaseProgramada';
-import { checkBlockConflicts, FormState } from './checkBlockConflicts';
+import {
+  checkBlockConflicts,
+  DUPLICATE_CLASS_MESSAGE,
+  FormState,
+} from './checkBlockConflicts';
 
 const normalizeDay = (value: string) =>
   value
@@ -193,6 +197,8 @@ export default function ClaseProgramadaForm() {
       } catch (error: any) {
         if (error.status === 409) {
           showError('Conflicto de horario');
+        } else if (error.status === 422) {
+          showError(DUPLICATE_CLASS_MESSAGE);
         } else if (error.status === 400) {
           showError('El docente no está disponible en ese horario');
         } else {
@@ -229,6 +235,8 @@ export default function ClaseProgramadaForm() {
         huboError = true;
         if (error.status === 409) {
           showError(`Bloque ${i + 1}: Conflicto de horario`);
+        } else if (error.status === 422) {
+          showError(`Bloque ${i + 1}: ${DUPLICATE_CLASS_MESSAGE}`);
         } else if (error.status === 400) {
           showError(`Bloque ${i + 1}: El docente no está disponible en ese horario`);
         } else {
