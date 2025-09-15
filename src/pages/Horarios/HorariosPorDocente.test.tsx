@@ -1,13 +1,20 @@
 // @vitest-environment jsdom
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { render, waitFor, screen } from '@testing-library/react';
 
 vi.mock('../../lib/api', () => ({
   default: {
     get: vi.fn(),
   },
+}));
+
+const mockUseParams = vi.hoisted(() => vi.fn());
+const mockNavigate = vi.hoisted(() => vi.fn());
+
+vi.mock('react-router-dom', () => ({
+  useParams: () => mockUseParams(),
+  useNavigate: () => mockNavigate,
 }));
 
 vi.mock('../../hooks/useDocentes', () => ({
@@ -22,6 +29,10 @@ vi.mock('../../components/Horarios/HorarioGrid', () => ({
   default: vi.fn(() => null),
 }));
 
+vi.mock('../../layouts/DashboardLayout', () => ({
+  default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}));
+
 import api from '../../lib/api';
 import HorariosPorDocente from './HorariosPorDocente';
 import HorarioGrid from '../../components/Horarios/HorarioGrid';
@@ -32,6 +43,9 @@ const apiGetMock = api.get as unknown as vi.Mock;
 beforeEach(() => {
   mockHorarioGrid.mockReset();
   apiGetMock.mockReset();
+  mockUseParams.mockReset();
+  mockUseParams.mockReturnValue({ docenteId: '1' });
+  mockNavigate.mockReset();
 });
 
 describe('HorariosPorDocente', () => {
@@ -49,16 +63,7 @@ describe('HorariosPorDocente', () => {
       },
     });
 
-    render(
-      <MemoryRouter initialEntries={["/horarios/docente/1"]}>
-        <Routes>
-          <Route
-            path="/horarios/docente/:docenteId"
-            element={<HorariosPorDocente />}
-          />
-        </Routes>
-      </MemoryRouter>,
-    );
+    render(<HorariosPorDocente />);
 
     await waitFor(() => expect(mockHorarioGrid).toHaveBeenCalled());
     expect(api.get).toHaveBeenCalledWith('/horarios/docente/1');
@@ -74,16 +79,7 @@ describe('HorariosPorDocente', () => {
       },
     });
 
-    render(
-      <MemoryRouter initialEntries={["/horarios/docente/1"]}>
-        <Routes>
-          <Route
-            path="/horarios/docente/:docenteId"
-            element={<HorariosPorDocente />}
-          />
-        </Routes>
-      </MemoryRouter>,
-    );
+    render(<HorariosPorDocente />);
 
     const emptyMessage = await screen.findByText(
       'No hay clases programadas para este horario.',

@@ -4,6 +4,9 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
 const rootDir = dirname(fileURLToPath(import.meta.url));
+const reactPath = resolve(rootDir, 'node_modules/react');
+const reactDomPath = resolve(rootDir, 'node_modules/react-dom');
+const reactJsxRuntimePath = resolve(rootDir, 'node_modules/react/jsx-runtime');
 
 export default defineConfig({
   plugins: [react()],
@@ -12,8 +15,12 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      react: resolve(rootDir, 'node_modules/react'),
-      'react-dom': resolve(rootDir, 'node_modules/react-dom'),
+      react: reactPath,
+      'react/jsx-runtime': reactJsxRuntimePath,
+      'react-dom': reactDomPath,
+      'react-router-dom/node_modules/react': reactPath,
+      'react-router-dom/node_modules/react/jsx-runtime': reactJsxRuntimePath,
+      'react-router-dom/node_modules/react-dom': reactDomPath,
     },
     dedupe: ['react', 'react-dom'],
   },

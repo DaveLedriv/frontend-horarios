@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import React from 'react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { render, screen } from '@testing-library/react';
 
 const apiGetMock = vi.hoisted(() => vi.fn());
@@ -45,6 +44,14 @@ vi.mock('../../lib/api', () => ({
   default: {
     get: apiGetMock,
   },
+}));
+
+const mockUseParams = vi.hoisted(() => vi.fn());
+const mockNavigate = vi.hoisted(() => vi.fn());
+
+vi.mock('react-router-dom', () => ({
+  useParams: () => mockUseParams(),
+  useNavigate: () => mockNavigate,
 }));
 
 import HorariosPorDocente from './HorariosPorDocente';
@@ -91,6 +98,8 @@ const createClase = (overrides?: Partial<{
 beforeEach(() => {
   apiGetMock.mockReset();
   window.alert = vi.fn();
+  mockUseParams.mockReset();
+  mockNavigate.mockReset();
 });
 
 describe('Horario normalization integration', () => {
@@ -99,13 +108,8 @@ describe('Horario normalization integration', () => {
       data: { clases: [createClase()] },
     });
 
-    render(
-      <MemoryRouter initialEntries={['/horarios/docente/1']}>
-        <Routes>
-          <Route path="/horarios/docente/:docenteId" element={<HorariosPorDocente />} />
-        </Routes>
-      </MemoryRouter>,
-    );
+    mockUseParams.mockReturnValue({ docenteId: '1' });
+    render(<HorariosPorDocente />);
 
     const subjectCell = await screen.findByText(materiaNombre);
     expect(subjectCell.textContent).toContain(materiaNombre);
@@ -121,13 +125,8 @@ describe('Horario normalization integration', () => {
       data: { clases: [createClase({ dia: '2' })] },
     });
 
-    render(
-      <MemoryRouter initialEntries={['/horarios/aula/1']}>
-        <Routes>
-          <Route path="/horarios/aula/:aulaId" element={<HorariosPorAula />} />
-        </Routes>
-      </MemoryRouter>,
-    );
+    mockUseParams.mockReturnValue({ aulaId: '1' });
+    render(<HorariosPorAula />);
 
     const subjectCell = await screen.findByText(materiaNombre);
     expect(subjectCell.textContent).toContain(materiaNombre);
