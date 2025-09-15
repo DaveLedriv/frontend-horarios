@@ -25,6 +25,7 @@ export default function ClaseProgramadaForm() {
   const navigate = useNavigate();
   const isEdit = Boolean(id);
 
+  const [docenteId, setDocenteId] = useState('');
   const { docentes } = useDocentes();
   const { materias } = useMaterias();
   const { aulas } = useAulas();
@@ -33,8 +34,6 @@ export default function ClaseProgramadaForm() {
     useDisponibilidadDocente(docenteId);
 
   const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-
-  const [docenteId, setDocenteId] = useState('');
   const [bloques, setBloques] = useState<FormState[]>([
     {
       materia_id: '',
