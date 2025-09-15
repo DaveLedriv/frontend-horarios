@@ -51,6 +51,11 @@ describe('HorarioGrid', () => {
     expect(table).not.toBeNull();
     expect(table!.className).toContain('border-collapse');
 
+    const wrapper = table?.parentElement;
+    expect(wrapper).not.toBeNull();
+    expect(wrapper!.className).toContain('horario-grid-scroll');
+    expect(wrapper!.className).toContain('overflow-auto');
+
     const firstBodyRow = container.querySelector('tbody tr');
     expect(firstBodyRow).not.toBeNull();
     expect(firstBodyRow!.className).toContain('odd:bg-white');
