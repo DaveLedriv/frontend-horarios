@@ -6,6 +6,52 @@ import { ClaseProgramada } from '../../types/ClaseProgramada';
 import { useDocentes } from '../../hooks/useDocentes';
 import HorarioGrid from '../../components/Horarios/HorarioGrid';
 
+const dayNameMap: Record<string, string> = {
+  '1': 'Lunes',
+  '2': 'Martes',
+  '3': 'Miércoles',
+  '4': 'Jueves',
+  '5': 'Viernes',
+  '6': 'Sábado',
+  '7': 'Domingo',
+  lunes: 'Lunes',
+  martes: 'Martes',
+  miércoles: 'Miércoles',
+  miercoles: 'Miércoles',
+  jueves: 'Jueves',
+  viernes: 'Viernes',
+  sábado: 'Sábado',
+  sabado: 'Sábado',
+  domingo: 'Domingo',
+};
+
+const toTwoDigits = (value?: string) => {
+  const trimmed = value?.trim() ?? '';
+  const digits = trimmed.replace(/\D/g, '');
+  if (!digits) return '00';
+  if (digits.length >= 2) return digits.slice(0, 2);
+  return digits.padStart(2, '0');
+};
+
+export const normalizeDay = (day: string | number | null | undefined): string => {
+  if (day === null || day === undefined) return '';
+  const original = String(day).trim();
+  if (!original) return '';
+  const mapped = dayNameMap[original.toLowerCase()];
+  return mapped ?? original;
+};
+
+export const normalizeTime = (time: string | null | undefined): string => {
+  if (!time) return '';
+  const trimmed = time.trim();
+  if (!trimmed) return '';
+  const [hoursRaw, minutesRaw, secondsRaw] = trimmed.split(':');
+  const hours = toTwoDigits(hoursRaw);
+  const minutes = toTwoDigits(minutesRaw);
+  const seconds = toTwoDigits(secondsRaw);
+  return `${hours}:${minutes}:${seconds}`;
+};
+
 export default function HorariosPorDocente() {
   const { docenteId } = useParams();
   const { docentes } = useDocentes();
@@ -61,17 +107,18 @@ export default function HorariosPorDocente() {
   const clasesGrid = useMemo(() => {
     const map: Record<string, { clase: ClaseProgramada; rowSpan: number } | null> = {};
     clases.forEach((c) => {
-      const startStr = c.hora_inicio?.slice(0, 2);
-      const endStr = c.hora_fin?.slice(0, 2);
-      if (!c.dia || !startStr || !endStr) return;
-      const start = parseInt(startStr, 10);
-      const end = parseInt(endStr, 10);
+      const normalizedDay = normalizeDay(c.dia);
+      const normalizedStart = normalizeTime(c.hora_inicio);
+      const normalizedEnd = normalizeTime(c.hora_fin);
+      if (!normalizedDay || !normalizedStart || !normalizedEnd) return;
+      const start = parseInt(normalizedStart.slice(0, 2), 10);
+      const end = parseInt(normalizedEnd.slice(0, 2), 10);
       if (Number.isNaN(start) || Number.isNaN(end) || end <= start) return;
       const rowSpan = end - start;
-      const startKey = `${c.dia}-${c.hora_inicio}`;
+      const startKey = `${normalizedDay}-${normalizedStart}`;
       map[startKey] = { clase: c, rowSpan };
       for (let h = start + 1; h < end; h++) {
-        const fillerKey = `${c.dia}-${h.toString().padStart(2, '0')}:00:00`;
+        const fillerKey = `${normalizedDay}-${normalizeTime(`${h}:00`)}`;
         map[fillerKey] = null;
       }
     });
