@@ -56,16 +56,6 @@ const generarHoras = (inicio: string, fin: string) => {
 const sortTimes = (times: string[]) =>
   Array.from(new Set(times)).sort((a, b) => a.localeCompare(b));
 
-function toAmPm(time: string): string {
-  const [hourStr, minuteStr] = time.split(':');
-  let hour = parseInt(hourStr, 10);
-  const suffix = hour >= 12 ? 'PM' : 'AM';
-  hour = hour % 12 || 12;
-  const hours = hour.toString().padStart(2, '0');
-  const minutes = minuteStr.padStart(2, '0');
-  return `${hours}:${minutes} ${suffix}`;
-}
-
 export default function ClaseProgramadaForm() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -195,8 +185,8 @@ export default function ClaseProgramadaForm() {
           materia_id: Number(bloque.materia_id),
           aula_id: Number(bloque.aula_id),
           dia: bloque.dia,
-          hora_inicio: toAmPm(bloque.hora_inicio),
-          hora_fin: toAmPm(bloque.hora_fin),
+          hora_inicio: `${bloque.hora_inicio}:00`,
+          hora_fin: `${bloque.hora_fin}:00`,
         });
         showSuccess('Clase programada actualizada');
         navigate(-1);
@@ -232,8 +222,8 @@ export default function ClaseProgramadaForm() {
           materia_id: Number(b.materia_id),
           aula_id: Number(b.aula_id),
           dia: b.dia,
-          hora_inicio: toAmPm(b.hora_inicio),
-          hora_fin: toAmPm(b.hora_fin),
+          hora_inicio: `${b.hora_inicio}:00`,
+          hora_fin: `${b.hora_fin}:00`,
         });
       } catch (error: any) {
         huboError = true;
