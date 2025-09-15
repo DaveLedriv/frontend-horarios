@@ -1,10 +1,46 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type SVGProps } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../lib/api';
 import { ClaseProgramada } from '../../types/ClaseProgramada';
 import { useDocentes } from '../../hooks/useDocentes';
 import HorarioGrid from '../../components/Horarios/HorarioGrid';
+
+const BackArrowIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg
+    viewBox="0 0 20 20"
+    fill="none"
+    aria-hidden="true"
+    focusable="false"
+    {...props}
+  >
+    <path
+      d="M7.75 4.75 3 9.5l4.75 4.75M3.75 9.5h13.25"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const DownloadIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg
+    viewBox="0 0 20 20"
+    fill="none"
+    aria-hidden="true"
+    focusable="false"
+    {...props}
+  >
+    <path
+      d="M10 3.25v9.5m0 0 3.25-3.25M10 12.75 6.75 9.5M4.5 15.75h11"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 
 const dayNameMap: Record<string, string> = {
   '1': 'Lunes',
@@ -87,7 +123,7 @@ export default function HorariosPorDocente() {
   }, [docenteId]);
 
   const handleExport = async () => {
-    if (!docenteId) return;
+    if (!docenteId || clases.length === 0) return;
     try {
       const res = await api.get(`/horarios/docente/${docenteId}/excel`, {
         responseType: 'blob',
@@ -128,21 +164,28 @@ export default function HorariosPorDocente() {
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <h2 className="text-2xl font-bold">
             Horario de {docente ? docente.nombre : 'Docente'}
           </h2>
-          <div className="flex space-x-2">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => navigate('/horarios/docentes')}
-              className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded"
+              type="button"
+              aria-label="Regresar a la lista de docentes"
+              className="inline-flex items-center gap-2 rounded bg-gray-200 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 disabled:opacity-50"
             >
+              <BackArrowIcon className="h-4 w-4" />
               Regresar
             </button>
             <button
               onClick={handleExport}
-              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+              type="button"
+              aria-label="Exportar horario del docente en Excel"
+              disabled={clases.length === 0}
+              className="inline-flex items-center gap-2 rounded bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
+              <DownloadIcon className="h-4 w-4" />
               Exportar Excel
             </button>
           </div>
