@@ -1,0 +1,37 @@
+.horario-grid-scroll {
+  width: 100%;
+  max-width: 100%;
+  padding-bottom: 0.75rem;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #60a5fa #e5e7eb;
+  touch-action: pan-x;
+  overscroll-behavior-x: contain;
+  scrollbar-gutter: stable both-edges;
+}
+
+.horario-grid-scroll::-webkit-scrollbar {
+  height: 0.6rem;
+}
+
+.horario-grid-scroll::-webkit-scrollbar-track {
+  background-color: #e5e7eb;
+  border-radius: 9999px;
+}
+
+.horario-grid-scroll::-webkit-scrollbar-thumb {
+  background-color: #3b82f6;
+  border-radius: 9999px;
+  border: 2px solid #e5e7eb;
+}
+
+.horario-grid-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: #2563eb;
+}
+
+@media (max-width: 768px) {
+  .horario-grid-scroll {
+    min-width: 100% !important;
+  }
+}
