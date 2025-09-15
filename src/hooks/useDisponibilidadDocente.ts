@@ -22,7 +22,10 @@ export const useDisponibilidadDocente = (docenteId: string | null) => {
         setLoading(true);
         const res = await api.get(`/disponibilidad/docente/${docenteId}`);
         if (!isMounted) return;
-        setDisponibilidad(res.data.disponibles || []);
+        const data = Array.isArray(res.data)
+          ? res.data
+          : res.data?.disponibles || [];
+        setDisponibilidad(data);
       } catch (err) {
         if (!isMounted) return;
         console.error('Error al cargar disponibilidad:', err);
