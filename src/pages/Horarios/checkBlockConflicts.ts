@@ -73,7 +73,10 @@ export async function checkBlockConflicts(
     if (!Number.isNaN(materiaId)) {
       const materiaConflict = aulaClases.find((c) => {
         if (editingId && c.id === editingId) return false;
-        return c.asignacion?.materia?.id === materiaId;
+        return (
+          c.asignacion?.materia?.id === materiaId &&
+          !(bloque.hora_fin <= c.hora_inicio || bloque.hora_inicio >= c.hora_fin)
+        );
       });
       if (materiaConflict) {
         return DUPLICATE_CLASS_MESSAGE;
