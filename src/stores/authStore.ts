@@ -15,9 +15,25 @@ interface AuthState {
 let logoutTimer: number | undefined;
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
+function decodeBase64Url(input: string): string | null {
+  try {
+    const normalized = input.replace(/-/g, '+').replace(/_/g, '/');
+    const paddingNeeded = (4 - (normalized.length % 4)) % 4;
+    const padded = normalized + '='.repeat(paddingNeeded);
+    return atob(padded);
+  } catch {
+    return null;
+  }
+}
+
 function parseJwt(token: string): any {
   try {
-    return JSON.parse(atob(token.split('.')[1]));
+    const [, payloadPart] = token.split('.');
+    if (!payloadPart) {
+      return null;
+    }
+    const decoded = decodeBase64Url(payloadPart);
+    return decoded ? JSON.parse(decoded) : null;
   } catch {
     return null;
   }
