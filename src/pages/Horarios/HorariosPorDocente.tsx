@@ -5,6 +5,10 @@ import api from '../../lib/api';
 import { ClaseProgramada } from '../../types/ClaseProgramada';
 import { useDocentes } from '../../hooks/useDocentes';
 import HorarioGrid from '../../components/Horarios/HorarioGrid';
+import {
+  ClasesApiResponse,
+  normalizeClasesResponse,
+} from './normalizeClasesResponse';
 
 const BackArrowIcon = (props: SVGProps<SVGSVGElement>) => (
   <svg
@@ -99,15 +103,16 @@ export default function HorariosPorDocente() {
   useEffect(() => {
     if (docenteId) {
       api
-        .get<{ clases: ClaseProgramada[] }>(`/horarios/docente/${docenteId}`)
+        .get<ClasesApiResponse>(`/horarios/docente/${docenteId}`)
         .then((res) => {
-          const valid = res.data.clases.filter(
+          const clasesResponse = normalizeClasesResponse(res.data);
+          const valid = clasesResponse.filter(
             (c) => c.hora_inicio && c.hora_fin && c.dia,
           );
-          if (valid.length !== res.data.clases.length) {
+          if (valid.length !== clasesResponse.length) {
             console.warn(
               'Datos incompletos en la respuesta de horarios',
-              res.data.clases,
+              clasesResponse,
             );
             window.alert(
               'La API devolvió datos incompletos para algunas clases. Se omitieron entradas inválidas.',

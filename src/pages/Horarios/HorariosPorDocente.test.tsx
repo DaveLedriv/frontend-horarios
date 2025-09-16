@@ -49,18 +49,25 @@ beforeEach(() => {
 });
 
 describe('HorariosPorDocente', () => {
-  it('fetches clases and renders HorarioGrid', async () => {
+  const createClase = () => ({
+    id: 1,
+    dia: 'Lunes',
+    hora_inicio: '08:00:00',
+    hora_fin: '09:00:00',
+  });
+
+  it.each([
+    [
+      'un objeto con la propiedad clases',
+      () => ({ clases: [createClase()] }),
+    ],
+    [
+      'un arreglo plano de clases',
+      () => [createClase()],
+    ],
+  ])('fetches clases and renders HorarioGrid cuando la API responde con %s', async (_, getResponse) => {
     apiGetMock.mockResolvedValue({
-      data: {
-        clases: [
-          {
-            id: 1,
-            dia: 'Lunes',
-            hora_inicio: '08:00:00',
-            hora_fin: '09:00:00',
-          },
-        ],
-      },
+      data: getResponse(),
     });
 
     render(<HorariosPorDocente />);
@@ -74,9 +81,7 @@ describe('HorariosPorDocente', () => {
 
   it('shows empty state when there are no clases', async () => {
     apiGetMock.mockResolvedValue({
-      data: {
-        clases: [],
-      },
+      data: [],
     });
 
     render(<HorariosPorDocente />);

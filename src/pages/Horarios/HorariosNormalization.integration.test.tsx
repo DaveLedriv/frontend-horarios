@@ -122,7 +122,7 @@ describe('Horario normalization integration', () => {
 
   it('shows aula class when day and time need normalization', async () => {
     apiGetMock.mockResolvedValueOnce({
-      data: { clases: [createClase({ dia: '2' })] },
+      data: [createClase({ dia: '2' })],
     });
 
     mockUseParams.mockReturnValue({ aulaId: '1' });
