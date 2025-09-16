@@ -38,7 +38,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         
-        <Route element={<PrivateRoute requiredRoles={["admin"]} />}>
+        <Route element={<PrivateRoute requiredRoles={["admin"]} redirectPath="/horarios" />}>
           <Route path="/dashboard" element={<Dashboard />} />
         </Route>
 
