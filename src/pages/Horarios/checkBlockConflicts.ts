@@ -1,5 +1,9 @@
 import api from '../../lib/api';
 import { ClaseProgramada } from '../../types/ClaseProgramada';
+import {
+  ClasesApiResponse,
+  normalizeClasesResponse,
+} from './normalizeClasesResponse';
 
 export const DUPLICATE_CLASS_MESSAGE =
   'Ya existe un horario para esta clase en el salón seleccionado';
@@ -31,12 +35,8 @@ export async function checkBlockConflicts(
   try {
     const editingId = isEdit && id ? Number(id) : null;
     const [docRes, aulaRes] = await Promise.all([
-      api.get<{ clases: ClaseProgramada[] }>(
-        `/horarios/docente/${docenteId}`
-      ),
-      api.get<{ clases: ClaseProgramada[] }>(
-        `/horarios/aula/${bloque.aula_id}`
-      ),
+      api.get<ClasesApiResponse>(`/horarios/docente/${docenteId}`),
+      api.get<ClasesApiResponse>(`/horarios/aula/${bloque.aula_id}`),
     ]);
 
     const hasConflict = (
@@ -66,8 +66,12 @@ export async function checkBlockConflicts(
       return null;
     };
 
-    const docenteClases: ClaseProgramada[] = docRes.data.clases;
-    const aulaClases: ClaseProgramada[] = aulaRes.data.clases;
+    const docenteClases: ClaseProgramada[] = normalizeClasesResponse(
+      docRes.data,
+    );
+    const aulaClases: ClaseProgramada[] = normalizeClasesResponse(
+      aulaRes.data,
+    );
     const materiaId = Number.parseInt(bloque.materia_id, 10);
 
     if (!Number.isNaN(materiaId)) {
