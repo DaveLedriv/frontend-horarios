@@ -160,7 +160,7 @@ const extractFirstArray = (value: unknown, visited = new WeakSet<object>()): unk
     visited.add(value);
 
     const claseValues = value.filter(isClaseRecord);
-    if (claseValues.length > 0) {
+    if (claseValues.some(hasScheduleFields)) {
       return claseValues;
     }
 
@@ -184,13 +184,15 @@ const extractFirstArray = (value: unknown, visited = new WeakSet<object>()): unk
   visited.add(value);
 
   if (isClaseRecord(value)) {
-    return [value];
+    if (hasScheduleFields(value)) {
+      return [value];
+    }
   }
 
   if (isNumericKeyMap(value)) {
     const numericValues = Object.values(value);
     const claseValues = numericValues.filter(isClaseRecord);
-    if (claseValues.length > 0) {
+    if (claseValues.some(hasScheduleFields)) {
       return claseValues;
     }
   }
@@ -205,7 +207,7 @@ const extractFirstArray = (value: unknown, visited = new WeakSet<object>()): unk
 
   const directValues = Object.values(value);
   const claseValues = directValues.filter(isClaseRecord);
-  if (claseValues.length > 0) {
+  if (claseValues.some(hasScheduleFields)) {
     return claseValues;
   }
 
