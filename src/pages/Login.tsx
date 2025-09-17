@@ -10,7 +10,11 @@ export default function Login() {
   const navigate = useNavigate();
 
   const login = useAuthStore((state) => state.login); // 👈 Acción de login
-  const dashboardRoute = '/dashboard';
+  const determineRedirect = () => {
+    const roles = useAuthStore.getState().roles ?? [];
+    const normalizedRoles = roles.map((role) => role.toLowerCase());
+    return normalizedRoles.includes('admin') ? '/dashboard' : '/horarios';
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +24,7 @@ export default function Login() {
       const data = await loginUser({ username, password });
 
       login(data.access_token); // 👈 Usamos Zustand para guardar sesión
-      navigate(dashboardRoute);
+      navigate(determineRedirect());
     } catch (err: any) {
       console.error(err);
       setError('Credenciales incorrectas o error del servidor.');
