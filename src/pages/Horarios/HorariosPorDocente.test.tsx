@@ -76,7 +76,8 @@ describe('HorariosPorDocente', () => {
     expect(api.get).toHaveBeenCalledWith('/horarios/docente/1');
     const lastCall = mockHorarioGrid.mock.calls.at(-1)!;
     const map = lastCall[0].clases;
-    expect(Object.keys(map).length).toBeGreaterThan(0);
+    expect(map['Lunes-08:00:00']?.rowSpan).toBe(2);
+    expect(map['Lunes-08:30:00']).toBeNull();
   });
 
   it('shows empty state when there are no clases', async () => {

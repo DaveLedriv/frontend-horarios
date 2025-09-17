@@ -6,6 +6,11 @@ import { ClaseProgramada } from '../../types/ClaseProgramada';
 import { useAulas } from '../../hooks/useAulas';
 import HorarioGrid from '../../components/Horarios/HorarioGrid';
 import {
+  SLOT_DURATION_MINUTES,
+  minutesToTimeKey,
+  timeKeyToMinutes,
+} from '../../components/Horarios/horarioUtils';
+import {
   ClasesApiResponse,
   normalizeClasesResponse,
 } from './normalizeClasesResponse';
@@ -157,16 +162,31 @@ export default function HorariosPorAula() {
       const normalizedStart = normalizeTime(c.hora_inicio);
       const normalizedEnd = normalizeTime(c.hora_fin);
       if (!normalizedDay || !normalizedStart || !normalizedEnd) return;
-      const start = parseInt(normalizedStart.slice(0, 2), 10);
-      const end = parseInt(normalizedEnd.slice(0, 2), 10);
-      if (Number.isNaN(start) || Number.isNaN(end) || end <= start) return;
-      const rowSpan = end - start;
-      const startKey = `${normalizedDay}-${normalizedStart}`;
-      map[startKey] = { clase: c, rowSpan };
-      for (let h = start + 1; h < end; h++) {
-        const fillerKey = `${normalizedDay}-${normalizeTime(`${h}:00`)}`;
-        map[fillerKey] = null;
+
+      const startMinutes = timeKeyToMinutes(normalizedStart);
+      const endMinutes = timeKeyToMinutes(normalizedEnd);
+      if (
+        Number.isNaN(startMinutes) ||
+        Number.isNaN(endMinutes) ||
+        endMinutes <= startMinutes
+      ) {
+        return;
       }
+
+      let rowSpan = 1;
+      const startKey = `${normalizedDay}-${minutesToTimeKey(startMinutes)}`;
+
+      for (
+        let minutes = startMinutes + SLOT_DURATION_MINUTES;
+        minutes < endMinutes;
+        minutes += SLOT_DURATION_MINUTES
+      ) {
+        const fillerKey = `${normalizedDay}-${minutesToTimeKey(minutes)}`;
+        map[fillerKey] = null;
+        rowSpan += 1;
+      }
+
+      map[startKey] = { clase: c, rowSpan };
     });
     return map;
   }, [clases]);

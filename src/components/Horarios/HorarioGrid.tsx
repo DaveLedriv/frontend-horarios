@@ -1,5 +1,6 @@
 import { ClaseProgramada } from '../../types/ClaseProgramada';
 import './HorarioGrid.css';
+import { createTimeSlots } from './horarioUtils';
 
 interface HorarioCell {
   clase: ClaseProgramada;
@@ -11,9 +12,7 @@ interface HorarioGridProps {
 }
 
 const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-const hours = Array.from({ length: 14 }, (_, i) => i + 7); // 7am to 8pm
-
-const formatHour = (h: number) => `${h.toString().padStart(2, '0')}:00`;
+const timeSlots = createTimeSlots();
 
 const baseCellClasses =
   'border border-gray-200 px-4 py-2 text-center align-middle transition-colors duration-150 hover:bg-blue-50';
@@ -55,13 +54,12 @@ export default function HorarioGrid({ clases }: HorarioGridProps) {
           </tr>
         </thead>
         <tbody>
-          {hours.map((hour) => (
-            <tr key={hour} className="odd:bg-white even:bg-slate-50/60">
+          {timeSlots.map(({ label, timeKey }) => (
+            <tr key={timeKey} className="odd:bg-white even:bg-slate-50/60">
               <td className="border border-gray-200 px-2 py-2 text-sm font-semibold text-gray-700">
-                {formatHour(hour)}
+                {label}
               </td>
               {days.map((day) => {
-                const timeKey = `${hour.toString().padStart(2, '0')}:00:00`;
                 const key = `${day}-${timeKey}`;
                 const cell = clases[key];
                 if (cell === undefined) {

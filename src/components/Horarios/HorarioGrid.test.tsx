@@ -38,8 +38,9 @@ const createClasesMap = (): Record<string, { clase: ClaseProgramada; rowSpan: nu
         },
       },
     },
-    rowSpan: 1,
+    rowSpan: 2,
   },
+  'Lunes-07:30:00': null,
 });
 
 describe('HorarioGrid', () => {
