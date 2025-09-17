@@ -1,6 +1,5 @@
 // src/stores/authStore.ts
 import { create } from 'zustand';
-import axios from 'axios';
 
 interface AuthState {
   token: string | null;
@@ -13,7 +12,6 @@ interface AuthState {
 }
 
 let logoutTimer: number | undefined;
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 function decodeBase64Url(input: string): string | null {
   try {
@@ -146,18 +144,8 @@ export const useAuthStore = create<AuthState>((set, get) => {
       set({ token, expires_at: exp, isAuthenticated: true, roles });
     },
     refresh: async () => {
-      try {
-        const response = await axios.post(`${API_BASE_URL}/auth/refresh`, null, { withCredentials: true });
-        const newToken = response.data.access_token;
-        if (newToken) {
-          get().login(newToken);
-        } else {
-          throw new Error('No token returned');
-        }
-      } catch (err) {
-        get().logout();
-        throw err;
-      }
+      get().logout();
+      throw new Error('Refresh token no disponible en el cliente');
     },
     logout: () => {
       localStorage.removeItem('token');

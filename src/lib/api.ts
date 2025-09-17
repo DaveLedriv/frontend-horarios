@@ -25,23 +25,26 @@ api.interceptors.response.use(
     if (response) {
       console.log(`${config?.method?.toUpperCase()} ${config?.url} - ${response.status}`);
       if (response.status === 401) {
-        const originalRequest = config;
         const auth = useAuthStore.getState();
-        if (!originalRequest._retry && auth.token) {
-          originalRequest._retry = true;
-          try {
-            await auth.refresh();
-            originalRequest.headers = originalRequest.headers || {};
-            originalRequest.headers.Authorization = `Bearer ${auth.token}`;
-            return api(originalRequest);
-          } catch (_) {
-            auth.logout();
-            window.location.href = '/';
-          }
-        } else {
+        const wasAuthenticated = auth.isAuthenticated && !!auth.token;
+
+        if (wasAuthenticated) {
           auth.logout();
-          window.location.href = '/';
+          if (typeof window !== 'undefined' && window.location.pathname !== '/') {
+            window.location.replace('/');
+          }
         }
+
+        const normalizedError = {
+          message:
+            wasAuthenticated
+              ? 'Tu sesión ha expirado. Vuelve a iniciar sesión.'
+              : response.data?.message || 'Error en la solicitud',
+          fieldErrors: response.data?.errors,
+          status: response.status,
+        };
+
+        return Promise.reject(normalizedError);
       }
       const normalizedError = {
         message: response.data?.message || 'Error en la solicitud',
