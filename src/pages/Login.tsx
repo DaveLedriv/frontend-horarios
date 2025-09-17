@@ -10,8 +10,7 @@ export default function Login() {
   const navigate = useNavigate();
 
   const login = useAuthStore((state) => state.login); // 👈 Acción de login
-  const fallbackRoute = '/horarios';
-  const adminRoute = '/dashboard';
+  const dashboardRoute = '/dashboard';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,10 +20,7 @@ export default function Login() {
       const data = await loginUser({ username, password });
 
       login(data.access_token); // 👈 Usamos Zustand para guardar sesión
-      const userRoles = useAuthStore.getState().roles.map((role) => role.toLowerCase());
-      const hasAdminRole = userRoles.includes('admin');
-
-      navigate(hasAdminRole ? adminRoute : fallbackRoute);
+      navigate(dashboardRoute);
     } catch (err: any) {
       console.error(err);
       setError('Credenciales incorrectas o error del servidor.');
