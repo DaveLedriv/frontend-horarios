@@ -33,6 +33,44 @@ const dayOrderMap: Record<string, number> = {
 
 const classCollectionKeys = ['clases', 'horarios', 'results', 'items', 'data'];
 
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+
+const hasScheduleFields = (record: Record<string, unknown>): boolean => {
+  const dia = record.dia as string | number | null | undefined;
+  const horaInicio = record.hora_inicio as string | null | undefined;
+  const horaFin = record.hora_fin as string | null | undefined;
+
+  const hasDay =
+    dia !== undefined && dia !== null && String(dia).trim().length > 0;
+  const hasStart =
+    horaInicio !== undefined && horaInicio !== null && String(horaInicio).trim().length > 0;
+  const hasEnd =
+    horaFin !== undefined && horaFin !== null && String(horaFin).trim().length > 0;
+
+  return hasDay && (hasStart || hasEnd);
+};
+
+const isClaseRecord = (value: unknown): value is Record<string, unknown> => {
+  if (!isObject(value)) {
+    return false;
+  }
+
+  if (hasScheduleFields(value)) {
+    return true;
+  }
+
+  const asignacion = value.asignacion as Record<string, unknown> | null | undefined;
+  const aula = value.aula as Record<string, unknown> | null | undefined;
+
+  return Boolean(asignacion || aula);
+};
+
+const isNumericKeyMap = (record: Record<string, unknown>): boolean => {
+  const keys = Object.keys(record);
+  return keys.length > 0 && keys.every((key) => /^\d+$/u.test(key));
+};
+
 const toTwoDigits = (value?: string) => {
   const trimmed = value?.trim() ?? '';
   const digits = trimmed.replace(/\D/g, '');
@@ -119,25 +157,42 @@ const extractFirstArray = (value: unknown, visited = new WeakSet<object>()): unk
     return value;
   }
 
-  if (typeof value !== 'object') {
+  if (!isObject(value)) {
     return [];
   }
 
-  const record = value as Record<string, unknown>;
-  if (visited.has(record)) {
+  if (visited.has(value)) {
     return [];
   }
-  visited.add(record);
+  visited.add(value);
+
+  if (isClaseRecord(value)) {
+    return [value];
+  }
+
+  if (isNumericKeyMap(value)) {
+    const numericValues = Object.values(value);
+    const claseValues = numericValues.filter(isClaseRecord);
+    if (claseValues.length > 0) {
+      return claseValues;
+    }
+  }
 
   for (const key of classCollectionKeys) {
-    if (!(key in record)) continue;
-    const nested = extractFirstArray(record[key], visited);
+    if (!(key in value)) continue;
+    const nested = extractFirstArray(value[key], visited);
     if (nested.length > 0) {
       return nested;
     }
   }
 
-  for (const nested of Object.values(record)) {
+  const directValues = Object.values(value);
+  const claseValues = directValues.filter(isClaseRecord);
+  if (claseValues.length > 0) {
+    return claseValues;
+  }
+
+  for (const nested of directValues) {
     const result = extractFirstArray(nested, visited);
     if (result.length > 0) {
       return result;

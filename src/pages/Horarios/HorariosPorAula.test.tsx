@@ -67,6 +67,14 @@ describe('HorariosPorAula', () => {
       'un arreglo plano de clases',
       () => [createClase()],
     ],
+    [
+      'un objeto plano con una clase',
+      () => createClase(),
+    ],
+    [
+      'un diccionario indexado por identificadores',
+      () => ({ '15': createClase() }),
+    ],
   ])('fetches clases and renders HorarioGrid cuando la API responde con %s', async (_, getResponse) => {
     apiGetMock.mockResolvedValue({
       data: getResponse(),
