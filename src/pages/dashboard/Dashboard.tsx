@@ -1,131 +1,199 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+﻿import { useCallback, useEffect, useMemo, useState } from 'react';
 import DashboardLayout from '../../layouts/DashboardLayout';
-import ChartCard from './components/ChartCard';
 import KpiCard from './components/KpiCard';
-import UserDistributionChart from '../../components/charts/UserDistributionChart';
-import PopularTimesChart from '../../components/charts/PopularTimesChart';
-import ReservationTrendsChart from '../../components/charts/ReservationTrendsChart';
+import api from '../../lib/api';
+import { ClaseProgramada } from '../../types/ClaseProgramada';
 import {
-  getDashboardStats,
-  getPopularTimes,
-  getTrends,
-  getUserDistribution,
-} from '../../services/dashboardApi';
-import type {
-  CategoryDistributionDatum,
-  DashboardStats,
-  TrendPoint,
-} from '../../types/dashboard';
+  getDayOrder,
+  normalizeClasesResponse,
+  normalizeDay,
+  parseTimeToMinutes,
+  toTimeLabel,
+} from '../../utils/horarios';
 
-interface DashboardDataBundle {
-  stats: DashboardStats;
-  distribution: CategoryDistributionDatum[];
-  popularTimes: CategoryDistributionDatum[];
-  trends: TrendPoint[];
+interface DashboardSummary {
+  docentes: number;
+  materias: number;
+  aulas: number;
+  asignaciones: number;
+  planes: number;
+  facultades: number;
+  clasesProgramadas: number;
 }
 
-const percentageFormatter = (value: number | null) => {
-  if (value === null) {
-    return '—';
-  }
-
-  const normalized = value > 1 ? value : value * 100;
-  return `${normalized.toFixed(1)}%`;
-};
+interface UpcomingClassRow {
+  id: number;
+  dia: string;
+  horario: string;
+  materia: string;
+  docente: string;
+  aula: string;
+}
 
 const fallbackErrorMessage = 'No se pudieron cargar los datos del dashboard.';
+const partialWarningMessage = 'Algunos datos no respondieron. Mostramos la información disponible.';
+
+const requestLabels = [
+  'docentes',
+  'materias',
+  'aulas',
+  'asignaciones',
+  'clases programadas',
+  'planes de estudio',
+  'facultades',
+] as const;
+
+type SettledAxios = PromiseSettledResult<{ data: unknown }>;
+
+const extractArray = <T,>(result: SettledAxios): T[] => {
+  if (result.status !== 'fulfilled') {
+    return [];
+  }
+
+  const { data } = result.value;
+  if (Array.isArray(data)) {
+    return data as T[];
+  }
+
+  if (data && typeof data === 'object') {
+    const record = data as Record<string, unknown>;
+    const candidates = ['results', 'items', 'data', 'value'];
+
+    for (const key of candidates) {
+      const value = record[key];
+      if (Array.isArray(value)) {
+        return value as T[];
+      }
+    }
+  }
+
+  return [];
+};
+
+const sortClasses = (classes: ClaseProgramada[]) =>
+  [...classes].sort((a, b) => {
+    const dayDiff = getDayOrder(a.dia) - getDayOrder(b.dia);
+    if (dayDiff !== 0) {
+      return dayDiff;
+    }
+
+    return parseTimeToMinutes(a.hora_inicio) - parseTimeToMinutes(b.hora_inicio);
+  });
+
+const selectUpcomingClasses = (classes: ClaseProgramada[]) =>
+  sortClasses(classes).slice(0, 8);
+
+const formatTimeRange = (
+  start: string | null | undefined,
+  end: string | null | undefined,
+): string => {
+  const startLabel = toTimeLabel(start);
+  const endLabel = toTimeLabel(end);
+
+  if (!startLabel && !endLabel) {
+    return 'Sin horario asignado';
+  }
+  if (!endLabel) {
+    return `${startLabel} en adelante`;
+  }
+  if (!startLabel) {
+    return `Hasta ${endLabel}`;
+  }
+  return `${startLabel} - ${endLabel}`;
+};
 
 export default function Dashboard() {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [userDistribution, setUserDistribution] = useState<
-    CategoryDistributionDatum[]
-  >([]);
-  const [popularTimes, setPopularTimes] = useState<
-    CategoryDistributionDatum[]
-  >([]);
-  const [trends, setTrends] = useState<TrendPoint[]>([]);
+  const [summary, setSummary] = useState<DashboardSummary | null>(null);
+  const [upcomingClasses, setUpcomingClasses] = useState<ClaseProgramada[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [partialWarning, setPartialWarning] = useState<boolean>(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const fetchDashboardData = useCallback(async () => {
-    const [statsResponse, distributionResponse, popularTimesResponse, trendResponse] =
-      await Promise.all([
-        getDashboardStats(),
-        getUserDistribution(),
-        getPopularTimes(),
-        getTrends(),
-      ]);
+    setLoading(true);
+    setPartialWarning(false);
 
-    const bundle: DashboardDataBundle = {
-      stats: statsResponse,
-      distribution: distributionResponse,
-      popularTimes: popularTimesResponse,
-      trends: trendResponse,
-    };
+    const requests = [
+      api.get('/docentes'),
+      api.get('/materias'),
+      api.get('/aulas'),
+      api.get('/asignaciones'),
+      api.get('/clases-programadas'),
+      api.get('/planes-estudio'),
+      api.get('/facultades'),
+    ] as const;
 
-    return bundle;
-  }, []);
+    try {
+      const results = (await Promise.allSettled(requests)) as SettledAxios[];
 
-  const applyDashboardData = useCallback((bundle: DashboardDataBundle) => {
-    setStats(bundle.stats);
-    setUserDistribution(bundle.distribution);
-    setPopularTimes(bundle.popularTimes);
-    setTrends(bundle.trends);
-    setLastUpdated(new Date());
-  }, []);
+      results.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          console.error(`Error al cargar ${requestLabels[index]}`, result.reason);
+        }
+      });
 
-  const handleError = useCallback((err: unknown) => {
-    if (err && typeof err === 'object' && 'message' in err) {
-      setError(String((err as { message?: unknown }).message || fallbackErrorMessage));
-    } else {
+      const allFailed = results.every((res) => res.status === 'rejected');
+      const someFailed = results.some((res) => res.status === 'rejected');
+
+      if (allFailed) {
+        setSummary(null);
+        setUpcomingClasses([]);
+        setError(fallbackErrorMessage);
+        setPartialWarning(false);
+        setLastUpdated(null);
+        return;
+      }
+
+      const [docentesRes, materiasRes, aulasRes, asignacionesRes, clasesRes, planesRes, facultadesRes] = results;
+
+      const docentes = extractArray(docentesRes);
+      const materias = extractArray(materiasRes);
+      const aulas = extractArray(aulasRes);
+      const asignaciones = extractArray(asignacionesRes);
+      const planes = extractArray(planesRes);
+      const facultades = extractArray(facultadesRes);
+
+      const clasesRaw =
+        clasesRes.status === 'fulfilled'
+          ? normalizeClasesResponse(clasesRes.value.data)
+          : [];
+
+      const sanitizedClasses = clasesRaw.filter((c) => c.dia && c.hora_inicio && c.hora_fin);
+      const orderedClasses = selectUpcomingClasses(sanitizedClasses);
+
+      setSummary({
+        docentes: docentes.length,
+        materias: materias.length,
+        aulas: aulas.length,
+        asignaciones: asignaciones.length,
+        planes: planes.length,
+        facultades: facultades.length,
+        clasesProgramadas: sanitizedClasses.length,
+      });
+      setUpcomingClasses(orderedClasses);
+      setError(null);
+      setPartialWarning(someFailed);
+      setLastUpdated(new Date());
+    } catch (err) {
+      console.error('Error al cargar el dashboard', err);
+      setSummary(null);
+      setUpcomingClasses([]);
       setError(fallbackErrorMessage);
+      setPartialWarning(false);
+      setLastUpdated(null);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    let isMounted = true;
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
-    const loadData = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchDashboardData();
-        if (!isMounted) return;
-        applyDashboardData(data);
-        setError(null);
-      } catch (err) {
-        if (!isMounted) return;
-        handleError(err);
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-          setRefreshing(false);
-        }
-      }
-    };
-
-    loadData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [applyDashboardData, fetchDashboardData, handleError]);
-
-  const handleRefresh = useCallback(async () => {
-    setRefreshing(true);
-    setLoading(true);
-    try {
-      const data = await fetchDashboardData();
-      applyDashboardData(data);
-      setError(null);
-    } catch (err) {
-      handleError(err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [applyDashboardData, fetchDashboardData, handleError]);
+  const handleRefresh = useCallback(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   const headerSubtitle = useMemo(() => {
     if (!lastUpdated) {
@@ -138,31 +206,33 @@ export default function Dashboard() {
     })}`;
   }, [lastUpdated]);
 
-  const kpis = useMemo(
-    () => [
-      {
-        title: 'Usuarios registrados',
-        value: stats?.totalUsers ?? null,
-        trend: stats?.userGrowth ?? null,
-      },
-      {
-        title: 'Docentes activos',
-        value: stats?.totalDocentes ?? null,
-        trend: stats?.docenteGrowth ?? null,
-      },
-      {
-        title: 'Reservas activas',
-        value: stats?.activeReservations ?? null,
-        trend: stats?.reservationGrowth ?? null,
-      },
-      {
-        title: 'Ocupación promedio',
-        value: stats?.averageOccupancy ?? null,
-        trend: stats?.occupancyGrowth ?? null,
-        formatter: percentageFormatter,
-      },
-    ],
-    [stats],
+  const metrics = useMemo(() => {
+    if (!summary) {
+      return [] as { key: string; title: string; value: number }[];
+    }
+
+    return [
+      { key: 'docentes', title: 'Docentes registrados', value: summary.docentes },
+      { key: 'materias', title: 'Materias activas', value: summary.materias },
+      { key: 'asignaciones', title: 'Asignaciones creadas', value: summary.asignaciones },
+      { key: 'clases', title: 'Clases programadas', value: summary.clasesProgramadas },
+      { key: 'aulas', title: 'Aulas disponibles', value: summary.aulas },
+      { key: 'planes', title: 'Planes de estudio', value: summary.planes },
+      { key: 'facultades', title: 'Facultades registradas', value: summary.facultades },
+    ];
+  }, [summary]);
+
+  const upcomingRows: UpcomingClassRow[] = useMemo(
+    () =>
+      upcomingClasses.map((clase) => ({
+        id: clase.id,
+        dia: normalizeDay(clase.dia) || 'Sin día',
+        horario: formatTimeRange(clase.hora_inicio, clase.hora_fin),
+        materia: clase.asignacion?.materia?.nombre ?? 'Sin materia',
+        docente: clase.asignacion?.docente?.nombre ?? 'Sin docente',
+        aula: clase.aula?.nombre ?? 'Sin aula',
+      })),
+    [upcomingClasses],
   );
 
   return (
@@ -179,7 +249,7 @@ export default function Dashboard() {
             disabled={loading}
             className="inline-flex items-center justify-center rounded-lg border border-blue-600 px-4 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {refreshing ? 'Actualizando…' : 'Actualizar datos'}
+            {loading ? 'Actualizando…' : 'Actualizar datos'}
           </button>
         </div>
 
@@ -192,42 +262,70 @@ export default function Dashboard() {
           </div>
         )}
 
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {kpis.map((kpi) => (
+        {!error && partialWarning && (
+          <div
+            role="status"
+            className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700"
+          >
+            {partialWarningMessage}
+          </div>
+        )}
+
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {metrics.map((metric) => (
             <KpiCard
-              key={kpi.title}
-              title={kpi.title}
-              value={kpi.value}
-              trend={kpi.trend ?? null}
-              formatter={kpi.formatter}
-              trendLabel="vs. periodo anterior"
-              isLoading={loading && stats === null}
+              key={metric.key}
+              title={metric.title}
+              value={metric.value}
+              isLoading={loading && !summary}
             />
           ))}
         </section>
 
-        <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-          <ChartCard
-            title="Distribución de usuarios"
-            description="Comparativo por perfiles académicos"
-            isLoading={loading && userDistribution.length === 0}
-          >
-            <UserDistributionChart data={userDistribution} />
-          </ChartCard>
-          <ChartCard
-            title="Horarios más solicitados"
-            description="Tramos horarios con mayor demanda de reservas"
-            isLoading={loading && popularTimes.length === 0}
-          >
-            <PopularTimesChart data={popularTimes} />
-          </ChartCard>
-          <ChartCard
-            title="Tendencia de reservas"
-            description="Evolución de reservas confirmadas por periodo"
-            isLoading={loading && trends.length === 0}
-          >
-            <ReservationTrendsChart data={trends} />
-          </ChartCard>
+        <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Próximas clases programadas</h2>
+              <p className="text-sm text-gray-500">
+                Vista rápida de los bloques registrados en la semana.
+              </p>
+            </div>
+          </div>
+
+          {loading && upcomingRows.length === 0 ? (
+            <div className="flex items-center justify-center py-12 text-sm text-gray-500">
+              Cargando información de las clases…
+            </div>
+          ) : upcomingRows.length === 0 ? (
+            <div className="flex items-center justify-center py-12 text-sm text-gray-500">
+              No hay clases programadas registradas.
+            </div>
+          ) : (
+            <div className="mt-6 overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 text-sm">
+                <thead className="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  <tr>
+                    <th className="px-4 py-3">Día</th>
+                    <th className="px-4 py-3">Horario</th>
+                    <th className="px-4 py-3">Materia</th>
+                    <th className="px-4 py-3">Docente</th>
+                    <th className="px-4 py-3">Aula</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {upcomingRows.map((row) => (
+                    <tr key={row.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 font-medium text-gray-900">{row.dia}</td>
+                      <td className="px-4 py-3 text-gray-700">{row.horario}</td>
+                      <td className="px-4 py-3 text-gray-700">{row.materia}</td>
+                      <td className="px-4 py-3 text-gray-700">{row.docente}</td>
+                      <td className="px-4 py-3 text-gray-700">{row.aula}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </section>
       </div>
     </DashboardLayout>

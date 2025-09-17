@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { loginUser } from '../services/authService';
+﻿import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../stores/authStore'; // 👈 Importa el store
+import { loginUser } from '../services/authService';
+import { useAuthStore } from '../stores/authStore';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -9,12 +9,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const login = useAuthStore((state) => state.login); // 👈 Acción de login
-  const determineRedirect = () => {
-    const roles = useAuthStore.getState().roles ?? [];
-    const normalizedRoles = roles.map((role) => role.toLowerCase());
-    return normalizedRoles.includes('admin') ? '/dashboard' : '/horarios';
-  };
+  const login = useAuthStore((state) => state.login);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,11 +17,10 @@ export default function Login() {
 
     try {
       const data = await loginUser({ username, password });
-
-      login(data.access_token); // 👈 Usamos Zustand para guardar sesión
-      navigate(determineRedirect());
-    } catch (err: any) {
-      console.error(err);
+      login(data.access_token);
+      navigate('/dashboard', { replace: true });
+    } catch (err) {
+      console.error('Error al iniciar sesión', err);
       setError('Credenciales incorrectas o error del servidor.');
     }
   };
@@ -37,7 +31,9 @@ export default function Login() {
         <h2 className="text-2xl font-semibold mb-4 text-center">Iniciar Sesión</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700">Usuario</label>
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+              Usuario
+            </label>
             <input
               type="text"
               id="username"
@@ -48,7 +44,9 @@ export default function Login() {
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Contraseña</label>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              Contraseña
+            </label>
             <input
               type="password"
               id="password"
@@ -59,9 +57,7 @@ export default function Login() {
             />
           </div>
 
-          {error && (
-            <div className="text-red-600 text-sm">{error}</div>
-          )}
+          {error && <div className="text-red-600 text-sm">{error}</div>}
 
           <button
             type="submit"

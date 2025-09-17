@@ -1,14 +1,9 @@
-import '@testing-library/jest-dom/vitest';
+﻿import '@testing-library/jest-dom/vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 import Dashboard from './Dashboard';
-import {
-  getDashboardStats,
-  getPopularTimes,
-  getTrends,
-  getUserDistribution,
-} from '../../services/dashboardApi';
+import api from '../../lib/api';
 
 vi.mock('../../layouts/DashboardLayout', () => ({
   default: ({ children }: { children: ReactNode }) => (
@@ -16,102 +11,77 @@ vi.mock('../../layouts/DashboardLayout', () => ({
   ),
 }));
 
-vi.mock('../../components/charts/UserDistributionChart', () => ({
-  default: ({ data }: { data: unknown }) => (
-    <div data-testid="user-distribution-chart">{JSON.stringify(data)}</div>
-  ),
+vi.mock('../../lib/api', () => ({
+  default: {
+    get: vi.fn(),
+  },
 }));
 
-vi.mock('../../components/charts/PopularTimesChart', () => ({
-  default: ({ data }: { data: unknown }) => (
-    <div data-testid="popular-times-chart">{JSON.stringify(data)}</div>
-  ),
-}));
+type GetMock = ReturnType<typeof vi.fn>;
 
-vi.mock('../../components/charts/ReservationTrendsChart', () => ({
-  default: ({ data }: { data: unknown }) => (
-    <div data-testid="reservation-trends-chart">{JSON.stringify(data)}</div>
-  ),
-}));
+const apiGetMock = api.get as unknown as GetMock;
 
-vi.mock('../../services/dashboardApi');
-
-type MockedService = ReturnType<typeof vi.fn>;
-
-const mockedGetDashboardStats = getDashboardStats as unknown as MockedService;
-const mockedGetUserDistribution = getUserDistribution as unknown as MockedService;
-const mockedGetPopularTimes = getPopularTimes as unknown as MockedService;
-const mockedGetTrends = getTrends as unknown as MockedService;
+const buildClase = () => ({
+  id: 10,
+  dia: '1',
+  hora_inicio: '07:00',
+  hora_fin: '09:00',
+  asignacion: {
+    materia: { nombre: 'Álgebra Lineal' },
+    docente: { nombre: 'Juan Pérez' },
+  },
+  aula: { nombre: 'A-101' },
+});
 
 describe('Dashboard page', () => {
   beforeEach(() => {
     vi.resetAllMocks();
   });
 
-  it('renders stats and charts after loading data', async () => {
-    mockedGetDashboardStats.mockResolvedValue({
-      totalUsers: 150,
-      totalDocentes: 42,
-      activeReservations: 28,
-      averageOccupancy: 0.78,
-      userGrowth: 5.2,
-      docenteGrowth: -1.8,
-      reservationGrowth: 3.4,
-      occupancyGrowth: 1.1,
-    });
-    mockedGetUserDistribution.mockResolvedValue([
-      { label: 'Estudiantes', value: 65 },
-      { label: 'Docentes', value: 35 },
-    ]);
-    mockedGetPopularTimes.mockResolvedValue([
-      { label: '08:00 - 10:00', value: 18 },
-      { label: '10:00 - 12:00', value: 22 },
-    ]);
-    mockedGetTrends.mockResolvedValue([
-      { date: '2024-01-01', value: 10 },
-      { date: '2024-01-02', value: 12 },
-    ]);
+  it('renders summary metrics and upcoming classes when data is available', async () => {
+    apiGetMock
+      .mockResolvedValueOnce({ data: [{ id: 1 }, { id: 2 }] }) // docentes
+      .mockResolvedValueOnce({ data: [{ id: 1 }, { id: 2 }, { id: 3 }] }) // materias
+      .mockResolvedValueOnce({ data: [{ id: 1 }] }) // aulas
+      .mockResolvedValueOnce({ data: [{ id: 1 }] }) // asignaciones
+      .mockResolvedValueOnce({ data: { clases: [buildClase()] } }) // clases programadas
+      .mockResolvedValueOnce({ data: [{ id: 1 }, { id: 2 }] }) // planes
+      .mockResolvedValueOnce({ data: [{ id: 1 }] }); // facultades
 
     render(<Dashboard />);
 
-    await waitFor(() => expect(mockedGetDashboardStats).toHaveBeenCalled());
+    await waitFor(() => expect(apiGetMock).toHaveBeenCalledWith('/docentes'));
 
-    expect(screen.getByText('Usuarios registrados')).toBeInTheDocument();
-    expect(screen.getByText('150')).toBeInTheDocument();
-    expect(screen.getByText('Docentes activos')).toBeInTheDocument();
-    expect(screen.getByText('42')).toBeInTheDocument();
-    expect(screen.getByText('Reservas activas')).toBeInTheDocument();
-    expect(screen.getByText('28')).toBeInTheDocument();
-    expect(screen.getByText('Ocupación promedio')).toBeInTheDocument();
-    expect(screen.getByText('78.0%')).toBeInTheDocument();
+    expect(screen.getByText('Docentes registrados').parentElement?.textContent).toContain('2');
+    expect(screen.getByText('Materias activas').parentElement?.textContent).toContain('3');
+    expect(screen.getByText('Clases programadas').parentElement?.textContent).toContain('1');
 
-    expect(screen.getByText(/5\.2%/)).toBeInTheDocument();
-    expect(screen.getByText(/1\.8%/)).toBeInTheDocument();
-
-    expect(screen.getByTestId('user-distribution-chart').textContent).toContain(
-      'Estudiantes',
-    );
-    expect(screen.getByTestId('popular-times-chart').textContent).toContain(
-      '08:00 - 10:00',
-    );
-    expect(screen.getByTestId('reservation-trends-chart').textContent).toContain(
-      '2024-01-01',
-    );
+    expect(screen.getByText('Lunes')).toBeInTheDocument();
+    expect(screen.getByText('07:00 - 09:00')).toBeInTheDocument();
+    expect(screen.getByText('Álgebra Lineal')).toBeInTheDocument();
+    expect(screen.getByText('Juan Pérez')).toBeInTheDocument();
+    expect(screen.getByText('A-101')).toBeInTheDocument();
   });
 
-  it('shows an error message when data fetching fails', async () => {
-    mockedGetDashboardStats.mockImplementation(() =>
-      Promise.reject(new Error('network error')),
-    );
-    mockedGetUserDistribution.mockResolvedValue([]);
-    mockedGetPopularTimes.mockResolvedValue([]);
-    mockedGetTrends.mockResolvedValue([]);
+  it('shows the fallback error when every request fails', async () => {
+    apiGetMock.mockRejectedValue(new Error('network down'));
 
     render(<Dashboard />);
 
-    await waitFor(() => expect(mockedGetDashboardStats).toHaveBeenCalled());
-    await waitFor(() =>
-      expect(screen.getByRole('alert')).toHaveTextContent(/network error/i),
-    );
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('No se pudieron cargar los datos del dashboard.');
+  });
+
+  it('displays a partial warning when at least one request fails', async () => {
+    apiGetMock
+      .mockResolvedValueOnce({ data: [{ id: 1 }] }) // docentes
+      .mockRejectedValueOnce(new Error('materias API error')) // materias
+      .mockResolvedValue({ data: [] });
+
+    render(<Dashboard />);
+
+    await waitFor(() => expect(apiGetMock).toHaveBeenCalledWith('/docentes'));
+    const warning = await screen.findByRole('status');
+    expect(warning).toHaveTextContent('Algunos datos no respondieron');
   });
 });

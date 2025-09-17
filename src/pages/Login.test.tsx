@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+﻿import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import type { NavigateFunction } from 'react-router-dom';
 import Login from './Login';
@@ -139,6 +139,18 @@ function renderLoginPage() {
 describe('Login navigation', () => {
   const loginUserMock = vi.mocked(loginUser);
 
+  const getPasswordField = () =>
+    screen.getByLabelText((_, element) => element instanceof HTMLInputElement && element.id === 'password');
+
+  const submitForm = (username: string, password: string) => {
+    fireEvent.change(screen.getByLabelText(/usuario/i), {
+      target: { value: username },
+    });
+    const passwordInput = getPasswordField();
+    fireEvent.change(passwordInput, { target: { value: password } });
+    fireEvent.click(screen.getByRole('button', { name: /iniciar/i }));
+  };
+
   beforeEach(() => {
     navigateMock.mockReset();
     loginUserMock.mockReset();
@@ -163,38 +175,24 @@ describe('Login navigation', () => {
     });
 
     renderLoginPage();
-
-    fireEvent.change(screen.getByLabelText(/usuario/i), {
-      target: { value: 'adminUser' },
-    });
-    fireEvent.change(screen.getByLabelText(/contraseña/i), {
-      target: { value: 'password' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: /iniciar sesión/i }));
+    submitForm('adminUser', 'password');
 
     await waitFor(() => {
-      expect(navigateMock).toHaveBeenCalledWith('/dashboard');
+      expect(navigateMock).toHaveBeenCalledWith('/dashboard', { replace: true });
     });
   });
 
-  it('redirects non-admin users to horarios', async () => {
+  it('redirects non-admin users to the dashboard', async () => {
     loginUserMock.mockResolvedValue({
       access_token: createToken(['user']),
       token_type: 'bearer',
     });
 
     renderLoginPage();
-
-    fireEvent.change(screen.getByLabelText(/usuario/i), {
-      target: { value: 'regularUser' },
-    });
-    fireEvent.change(screen.getByLabelText(/contraseña/i), {
-      target: { value: 'password' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: /iniciar sesión/i }));
+    submitForm('regularUser', 'password');
 
     await waitFor(() => {
-      expect(navigateMock).toHaveBeenCalledWith('/horarios');
+      expect(navigateMock).toHaveBeenCalledWith('/dashboard', { replace: true });
     });
   });
 });
