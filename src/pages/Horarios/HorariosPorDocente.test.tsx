@@ -73,6 +73,10 @@ describe('HorariosPorDocente', () => {
       'un diccionario indexado por identificadores',
       () => ({ '10': createClase() }),
     ],
+    [
+      'un arreglo que inicia con metadata antes de las clases',
+      () => [[{ total: 1 }], { clases: [createClase()] }],
+    ],
   ])('fetches clases and renders HorarioGrid cuando la API responde con %s', async (_, getResponse) => {
     apiGetMock.mockResolvedValue({
       data: getResponse(),

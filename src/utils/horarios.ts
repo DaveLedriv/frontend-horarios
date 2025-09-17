@@ -154,7 +154,24 @@ const extractFirstArray = (value: unknown, visited = new WeakSet<object>()): unk
   }
 
   if (Array.isArray(value)) {
-    return value;
+    if (visited.has(value)) {
+      return [];
+    }
+    visited.add(value);
+
+    const claseValues = value.filter(isClaseRecord);
+    if (claseValues.length > 0) {
+      return claseValues;
+    }
+
+    for (const item of value) {
+      const nested = extractFirstArray(item, visited);
+      if (nested.length > 0) {
+        return nested;
+      }
+    }
+
+    return [];
   }
 
   if (!isObject(value)) {
