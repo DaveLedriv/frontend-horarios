@@ -21,7 +21,7 @@ export default function PrivateRoute({
     return <Navigate to="/" replace />;
   }
 
-  if (requiredRoles && requiredRoles.length > 0) {
+  if (requiredRoles && requiredRoles.length > 0 && roles.length > 0) {
     const normalizedRoles = roles.map((role) => role.toLowerCase());
     const hasRole = requiredRoles.some((role) =>
       normalizedRoles.includes(role.toLowerCase()),
