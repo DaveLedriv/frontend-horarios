@@ -90,15 +90,20 @@ describe('HorariosPorAula', () => {
     expect(map['Lunes-08:30:00']).toBeNull();
   });
 
-  it('ignores metadata arrays with asignaciones without schedule fields', async () => {
+  it('propagates metadata from wrappers with horarios en forma de diccionario', async () => {
     apiGetMock.mockResolvedValue({
-      data: [
-        [
-          { asignacion: { id: 20, materia: 'Meta' }, aula: { id: 1 } },
-          { aula: { id: 2, nombre: 'Meta Aula' } },
-        ],
-        { clases: [createClase()] },
-      ],
+      data: {
+        asignacion: { id: 20, materia: 'Meta' },
+        aula: { id: 2, nombre: 'Meta Aula' },
+        horarios: {
+          0: {
+            id: 30,
+            dia: 'Lunes',
+            hora_inicio: '08:00:00',
+            hora_fin: '09:00:00',
+          },
+        },
+      },
     });
 
     render(<HorariosPorAula />);
@@ -107,8 +112,12 @@ describe('HorariosPorAula', () => {
     expect(api.get).toHaveBeenCalledWith('/horarios/aula/1');
     const lastCall = mockHorarioGrid.mock.calls.at(-1)!;
     const map = lastCall[0].clases;
-    expect(map['Lunes-08:00:00']?.rowSpan).toBe(2);
+    const cell = map['Lunes-08:00:00'];
+    expect(cell?.rowSpan).toBe(2);
     expect(map['Lunes-08:30:00']).toBeNull();
+    expect(cell?.clase.hora_inicio).toBe('08:00:00');
+    expect(cell?.clase.asignacion).toEqual({ id: 20, materia: 'Meta' });
+    expect(cell?.clase.aula).toEqual({ id: 2, nombre: 'Meta Aula' });
   });
 
   it('shows empty state when there are no clases', async () => {
