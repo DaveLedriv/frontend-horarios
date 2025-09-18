@@ -148,7 +148,81 @@ export const parseTimeToMinutes = (
   return hours * 60 + minutes;
 };
 
-const extractFirstArray = (value: unknown, visited = new WeakSet<object>()): unknown[] => {
+type ClaseMetadata = {
+  asignacion?: unknown;
+  aula?: unknown;
+};
+
+const extractClaseMetadata = (
+  record: Record<string, unknown>,
+): ClaseMetadata => {
+  const metadata: ClaseMetadata = {};
+
+  if ('asignacion' in record && record.asignacion !== undefined) {
+    metadata.asignacion = record.asignacion;
+  }
+
+  if ('aula' in record && record.aula !== undefined) {
+    metadata.aula = record.aula;
+  }
+
+  return metadata;
+};
+
+const mergeMetadata = (
+  base: ClaseMetadata,
+  addition: ClaseMetadata,
+): ClaseMetadata => {
+  const result: ClaseMetadata = { ...base };
+  let changed = false;
+
+  if (Object.prototype.hasOwnProperty.call(addition, 'asignacion')) {
+    result.asignacion = addition.asignacion;
+    changed = true;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(addition, 'aula')) {
+    result.aula = addition.aula;
+    changed = true;
+  }
+
+  return changed ? result : base;
+};
+
+const mergeMetadataValue = (existing: unknown, addition: unknown): unknown => {
+  if (existing === undefined || existing === null) {
+    return addition;
+  }
+
+  if (isObject(existing) && isObject(addition)) {
+    return { ...addition, ...existing };
+  }
+
+  return existing;
+};
+
+const cloneClaseWithMetadata = (
+  clase: Record<string, unknown>,
+  metadata: ClaseMetadata,
+): Record<string, unknown> => {
+  const clone: Record<string, unknown> = { ...clase };
+
+  if (Object.prototype.hasOwnProperty.call(metadata, 'asignacion')) {
+    clone.asignacion = mergeMetadataValue(clone.asignacion, metadata.asignacion);
+  }
+
+  if (Object.prototype.hasOwnProperty.call(metadata, 'aula')) {
+    clone.aula = mergeMetadataValue(clone.aula, metadata.aula);
+  }
+
+  return clone;
+};
+
+const extractFirstArray = (
+  value: unknown,
+  visited = new WeakSet<object>(),
+  metadata: ClaseMetadata = {},
+): unknown[] => {
   if (!value) {
     return [];
   }
@@ -161,11 +235,11 @@ const extractFirstArray = (value: unknown, visited = new WeakSet<object>()): unk
 
     const claseValues = value.filter(isClaseRecord);
     if (claseValues.some(hasScheduleFields)) {
-      return claseValues;
+      return claseValues.map((clase) => cloneClaseWithMetadata(clase, metadata));
     }
 
     for (const item of value) {
-      const nested = extractFirstArray(item, visited);
+      const nested = extractFirstArray(item, visited, metadata);
       if (nested.length > 0) {
         return nested;
       }
@@ -183,23 +257,28 @@ const extractFirstArray = (value: unknown, visited = new WeakSet<object>()): unk
   }
   visited.add(value);
 
+  let metadataForChildren = metadata;
+
   if (isClaseRecord(value)) {
     if (hasScheduleFields(value)) {
-      return [value];
+      return [cloneClaseWithMetadata(value, metadata)];
     }
+
+    const ownMetadata = extractClaseMetadata(value);
+    metadataForChildren = mergeMetadata(metadata, ownMetadata);
   }
 
   if (isNumericKeyMap(value)) {
     const numericValues = Object.values(value);
     const claseValues = numericValues.filter(isClaseRecord);
     if (claseValues.some(hasScheduleFields)) {
-      return claseValues;
+      return claseValues.map((clase) => cloneClaseWithMetadata(clase, metadataForChildren));
     }
   }
 
   for (const key of classCollectionKeys) {
     if (!(key in value)) continue;
-    const nested = extractFirstArray(value[key], visited);
+    const nested = extractFirstArray(value[key], visited, metadataForChildren);
     if (nested.length > 0) {
       return nested;
     }
@@ -208,11 +287,11 @@ const extractFirstArray = (value: unknown, visited = new WeakSet<object>()): unk
   const directValues = Object.values(value);
   const claseValues = directValues.filter(isClaseRecord);
   if (claseValues.some(hasScheduleFields)) {
-    return claseValues;
+    return claseValues.map((clase) => cloneClaseWithMetadata(clase, metadataForChildren));
   }
 
   for (const nested of directValues) {
-    const result = extractFirstArray(nested, visited);
+    const result = extractFirstArray(nested, visited, metadataForChildren);
     if (result.length > 0) {
       return result;
     }
